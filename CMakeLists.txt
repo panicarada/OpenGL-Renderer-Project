@@ -28,6 +28,8 @@ set(HEADERS src/Camera)
 include_directories(${HEADERS})
 set(HEADERS src/Geometry)
 include_directories(${HEADERS})
+set(HEADERS src/Scene)
+include_directories(${HEADERS})
 set(HEADERS lib)
 include_directories(${HEADERS})
 set(HEADERS lib/imgui)
@@ -40,4 +42,4 @@ link_libraries(${GLEW_LINK} ${FRAMEWORKS_1} ${FRAMEWORKS_2} ${FRAMEWORKS_3} ${FR
 add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src/Basic.h src/Render/Renderer.h src/Render/Shader.cpp src/Render/Shader.h src/Render/VertexBuffer.h src/Render/VertexBufferLayout.h src/Render/VertexArray.h src/Render/IndexBuffer.h src/Render/Texture.h src/Tests/Test.h src/Tests/TestBatchColor.cpp src/Tests/TestBatchColor.h src/Geometry/Geometry.h src/Geometry/Sphere.cpp src/Geometry/Sphere.h src/Tests/TestSphere.cpp src/Tests/TestSphere.h
         lib/imgui/examples/imgui_impl_glfw.cpp lib/imgui/examples/imgui_impl_glfw.h
         lib/imgui/imgui.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_widgets.cpp
-        lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Tests/TestCube.cpp src/Tests/TestCube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Tests/TestCylinder.cpp src/Tests/TestCylinder.h src/Geometry/Cone.cpp src/Geometry/Cone.h src/Tests/TestGeometry.cpp src/Tests/TestGeometry.h)
+        lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Tests/TestCube.cpp src/Tests/TestCube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Tests/TestCylinder.cpp src/Tests/TestCylinder.h src/Geometry/Cone.cpp src/Geometry/Cone.h src/Tests/TestGeometry.cpp src/Tests/TestGeometry.h src/Scene/Light.h)

@@ -106,19 +106,19 @@ void Cylinder::updateSubdivision(int Steps)
             Indices.push_back(i+2);
             Indices.push_back(i+4);
 
-            Indices.push_back(i+2);
             Indices.push_back(i+4);
+            Indices.push_back(i+2);
             Indices.push_back(i+6);
         }
         else
         {
             Indices.push_back(i);
             Indices.push_back(i+2);
-            Indices.push_back(0);
+            Indices.push_back(1);
 
-            Indices.push_back(0);
+            Indices.push_back(1);
             Indices.push_back(i+2);
-            Indices.push_back(2);
+            Indices.push_back(3);
         }
     }
 

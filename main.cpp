@@ -54,12 +54,12 @@ int main()
 
     GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
 
-    #define __DEBUG__
+//    #define __DEBUG__
 
     #ifdef __DEBUG__
     window = glfwCreateWindow( 960, 960, "My App", NULL, NULL);
     #else
-    window = glfwCreateWindow( 1920, 1280, "My App", NULL, NULL);
+    window = glfwCreateWindow( 1280, 1280, "My App", NULL, NULL);
     #endif
     if( window == NULL )
     {
@@ -208,7 +208,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         if (currentTest && key == GLFW_KEY_BACKSPACE)
         { // 删除物体
 //            std::cout << key << std::endl;
-            currentTest->OnKeyAction(key);
+            currentTest->OnKeyAction(key, mods);
         }
     }
 

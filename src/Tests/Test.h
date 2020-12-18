@@ -21,7 +21,7 @@ namespace test
         virtual void OnUpdate(GLFWwindow *Window, float deltaTime){}; // 实时的更新响应，deltaTime表示两轮响应相隔时间
         virtual void OnRender(){}; // 实时的绘制方程
         virtual void OnImGuiRender(){}; // ImGUI响应
-        virtual void OnKeyAction(int key) {};
+        virtual void OnKeyAction(int key, int mods) {};
 
         virtual std::shared_ptr<Camera> getCamera()
         {

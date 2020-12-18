@@ -169,7 +169,7 @@ void Cone::updateDrawData()
     // 侧面
     for (int i = 1;i < 2 * m_Steps; i += 2)
     {
-        if (i < 2*m_Steps-3)
+        if (i < 2*m_Steps-2)
         {
             Indices.push_back(Center2);
             Indices.push_back(i);

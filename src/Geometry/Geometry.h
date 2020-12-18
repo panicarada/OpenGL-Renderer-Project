@@ -33,6 +33,7 @@ public:
         m_Shader->setUniformMat4f("u_model", Model);
         m_Shader->setUniformMat4f("u_projection", Projection);
         m_Shader->setUniformMat4f("u_view", View);
+
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
     }
     // 根据旋转角度重建旋转矩阵
@@ -44,7 +45,6 @@ public:
 
         glm::quat Orientation = glm::normalize(m_qPitch * m_qYaw * m_qRoll);
         m_RotateMatrix = glm::mat4_cast(Orientation);
-//        updateDrawData();
     }
 
     virtual void updateDrawData() = 0; // 更新用于绘制的数据
@@ -64,9 +64,6 @@ public:
     }
 
     virtual std::string getClassName() = 0; // 返回几何物体名字
-//    inline void setPitch(const float& Pitch) {m_Pitch = Pitch; updateRotation();};
-//    inline void setYaw(const float& Yaw) {m_Yaw = Yaw; updateRotation();};
-//    inline void setRoll(const float& Roll) {m_Roll = Roll; updateRotation();};
 protected:
     /* 渲染要用的数据结构 */
     std::shared_ptr<Shader> m_Shader;
@@ -91,8 +88,5 @@ public:
     /* 以下角度类似于Camera，
      * 但是为了方便几何图形都默认InitDirection = z轴正方向，InitUp = y轴正方向 */
     Rotation m_Rotation;
-//    float m_Pitch; // 俯仰角
-//    float m_Yaw; // 偏航角
-//    float m_Roll; // 滚转角
 };
 

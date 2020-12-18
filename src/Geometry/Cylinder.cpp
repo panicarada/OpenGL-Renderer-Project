@@ -199,6 +199,10 @@ void Cylinder::updateDrawData()
         }
     }
 
+    // 重新分配空间
+    m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, Vertices.size() * sizeof(Vertex), false);
+    m_IndexBuffer = std::make_unique<IndexBuffer>(nullptr, Indices.size(), false);
+
     // 绑定VAO
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, Indices.size() * sizeof(unsigned int), &Indices[0]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, Vertices.size() * sizeof(Vertex), &Vertices[0]); // No allocation, only send data

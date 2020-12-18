@@ -7,6 +7,9 @@
 #include "Geometry.h"
 #include "Camera.h"
 
+#include <vector>
+#include <random>
+
 class Cube : public Geometry
 {
 public:
@@ -24,4 +27,81 @@ private:
         glm::vec3 Normal;
         glm::vec4 Color;
     };
+    inline std::vector<Vertex> getSquare(const glm::vec3 Normal)
+    {
+        // 随机数
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
+
+        // 注意，都要逆时针方向
+        std::vector<Vertex> Vertices;
+        if (Normal.x > 0)
+        {
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        else if (Normal.x < 0)
+        {
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        else if (Normal.y > 0)
+        {
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        else if (Normal.y < 0)
+        {
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        else if (Normal.z > 0)
+        {
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        else if (Normal.z < 0)
+        {
+            Vertices.push_back({glm::vec3(-m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(-m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices.push_back({glm::vec3(m_Scale.x, -m_Scale.y, -m_Scale.z), Normal,
+                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        }
+        return Vertices;
+    }
 };

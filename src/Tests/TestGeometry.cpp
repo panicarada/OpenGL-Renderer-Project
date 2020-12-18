@@ -48,7 +48,6 @@ void test::TestGeometry::OnRender()
 
     for (auto geometry : m_GeometrySet)
     {
-
         geometry->draw();
     }
     Floor->draw();
@@ -105,15 +104,43 @@ void test::TestGeometry::OnImGuiRender()
         return ;
     }
 
+    std::unordered_map<int, std::shared_ptr<Geometry>> map; // 整数到指针的映射表
+    std::vector<std::string> items;
+    int selectedItem = -1; // 选中物体在列表中的位置
+    std::shared_ptr<Geometry> selectedItemPtr;
+    /* 把现在的几何物体做成listbox，这部分是参考ImGui官方示例的 */
+    int i = 0;
+    for (auto geometry : m_GeometrySet)
+    {
+        if (geometry->Comment == "Prism")
+        {
+            items.push_back("Geometry::Prism" + std::to_string(i));
+        }
+        else
+        {
+            items.push_back(geometry->getClassName() + std::to_string(i));
+        }
+        if (selectedGeometry == geometry)
+        {
+            selectedItem = i;
+        }
+        map[i] = geometry;
+        ++i;
+    }
+
+    if (ImGui::ListBox("Geometries", &selectedItem, items))
+    {
+        selectedGeometry = map[selectedItem];
+    }
+
     if (ImGui::SliderFloat3("Translation", &selectedGeometry->m_Position.x, -10.0f, 10.0f))
     {
-//        m_Sphere->updateDrawData();
+
     }
 
     if (ImGui::SliderFloat3("Rotation", &selectedGeometry->m_Rotation.Pitch, -180.0f, 180.0f))
     {
         selectedGeometry->updateRotation();
-//        m_Sphere->updateDrawData();
     }
 
     if ((selectedGeometry->getClassName() == "Geometry::Cylinder"))
@@ -156,37 +183,6 @@ void test::TestGeometry::OnImGuiRender()
             sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
         }
     }
-
-    std::unordered_map<int, std::shared_ptr<Geometry>> map; // 整数到指针的映射表
-
-    std::vector<std::string> items;
-    int selectedItem = -1; // 选中物体在列表中的位置
-    std::shared_ptr<Geometry> selectedItemPtr;
-    /* 把现在的几何物体做成listbox，这部分是参考ImGui官方示例的 */
-    int i = 0;
-    for (auto geometry : m_GeometrySet)
-    {
-        if (geometry->Comment == "Prism")
-        {
-            items.push_back("Geometry::Prism" + std::to_string(i));
-        }
-        else
-        {
-            items.push_back(geometry->getClassName() + std::to_string(i));
-        }
-        if (selectedGeometry == geometry)
-        {
-            selectedItem = i;
-        }
-        map[i] = geometry;
-        ++i;
-    }
-
-    if (ImGui::ListBox("Geometries", &selectedItem, items))
-    {
-        selectedGeometry = map[selectedItem];
-    }
-
     if (ImGui::ColorEdit4("Color", &selectedGeometry->m_Color.x))
     {
         selectedGeometry->updateDrawData();
@@ -205,26 +201,13 @@ void test::TestGeometry::OnImGuiRender()
             selectedGeometry->updateDrawData();
         }
     }
-
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
 test::TestGeometry::TestGeometry()
 {
-    // blend function参数设置为src = src_alpha, dest = 1 - src_alpha
-    // 因为默认的blend function为ADD（即src + dest）
-    // 所以这样写的效果是rgb = src_rgb * src_alpha + dest_rgb * (1-src_alpha)
-//    DebugCall(glBlendFunc(GL_ONE, GL_ZERO));
-//    DebugCall(glEnable(GL_BLEND));
-
-    // 面剔除（不渲染背面）
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
-
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
-
 
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
@@ -232,13 +215,18 @@ test::TestGeometry::TestGeometry()
     m_Camera->setProjection(glm::perspective(30.0f, 1.0f, 0.1f, 100.0f));
     selectedGeometry = nullptr;
 
-
     // 地板
     Floor = std::make_shared<Cube>(m_Camera, m_Shader);
     Floor->m_Scale = {20.0f, 20.0f, 0.0001f, 20.0f};
     Floor->m_Color = glm::vec4(0.18f, 0.6f, 0.96f, 1.0f);
     Floor->updateDrawData();
-    Floor->m_Position = m_Camera->getDirection() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
+    Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
+
+    // 光源
+    auto LightPosition = m_Camera->getPosition() - 10.0f * m_Camera->getDirection() + glm::vec3(-2.0f, 5.0f, 0.0f);
+    m_Shader->setUniform3f("u_LightPosition", LightPosition.x, LightPosition.y, LightPosition.z);
+    m_Shader->setUniform4f("u_LightColor", 1.0f, 1.0f, 1.0f, 1.0f);
+    m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
 }
 
 void test::TestGeometry::OnKeyAction(int key)

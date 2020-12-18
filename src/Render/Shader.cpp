@@ -140,3 +140,8 @@ void Shader::setUniformMat4f(const std::string Name, glm::mat4 &matrix)
     // &matrix[0][0]表示第一个元素的地址，之后OpenGL会读取连续的16个数
     DebugCall(glUniformMatrix4fv(getUniformLocation(Name), 1, GL_FALSE, &matrix[0][0]));
 }
+
+void Shader::setUniform3f(const std::string Name, float v0, float v1, float v2)
+{
+    DebugCall(glUniform3f(getUniformLocation(Name), v0, v1, v2));
+}

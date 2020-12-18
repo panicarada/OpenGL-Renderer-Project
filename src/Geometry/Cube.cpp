@@ -10,8 +10,6 @@
 Cube::Cube(const std::shared_ptr<Camera> &Camera, const std::shared_ptr<Shader> &Shader, const glm::vec3 &Position,
            Rotation rotation, Scale Scale) : Geometry(Camera, Shader, Position, rotation, Scale)
 {
-//    m_VAO = std::make_unique<VertexArray>();
-//    m_Layout = std::make_unique<VertexBufferLayout>();
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
@@ -22,19 +20,18 @@ Cube::Cube(const std::shared_ptr<Camera> &Camera, const std::shared_ptr<Shader> 
         unsigned int y;
         unsigned int z;
     };
-    std::vector<temp> Indices =
+    std::vector<temp> Indices;
+    for (unsigned int i = 0; i < 6; ++i)
     {
-            {0, 1, 2}, {0, 2, 3}, // 每一行代表一个正方形
-            {1, 0, 4}, {1, 4, 5},
-            {2, 1, 5}, {2, 5, 6},
-            {3, 2, 6}, {3, 6, 7},
-            {6, 5, 4}, {6, 4, 7},
-            {4, 0, 3}, {4, 3, 7}
-    };
+        unsigned int offset = (i << 2);
+        Indices.push_back({offset, offset + 1, offset + 2});
+        Indices.push_back({offset, offset + 2, offset + 3});
+    }
+
 
     // 立方体只需要为buffer分配一次空间
-    m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, 8 * sizeof(Vertex), false);
-    m_IndexBuffer = std::make_unique<IndexBuffer>(&Indices[0].x, 6*6, false);
+    m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, 24 * sizeof(Vertex), false);
+    m_IndexBuffer = std::make_unique<IndexBuffer>(&Indices[0].x, 36, true);
     updateDrawData();
 }
 
@@ -47,18 +44,29 @@ void Cube::updateDrawData()
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
     // 重新计算球面上的点，并放入buffer中
-    std::vector<Vertex> Vertices =
-    {
-            {{-m_Scale.x, m_Scale.y, -m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{m_Scale.x, m_Scale.y, -m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{m_Scale.x, m_Scale.y, m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{-m_Scale.x, m_Scale.y, m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{-m_Scale.x, -m_Scale.y, -m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{m_Scale.x, -m_Scale.y, -m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{m_Scale.x, -m_Scale.y, m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)},
-            {{-m_Scale.x, -m_Scale.y, m_Scale.z}, {0.0f, 0.0f, 0.0f}, m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)}
-    };
+    std::vector<Vertex> Vertices;
 
+    std::vector<Vertex> temp = getSquare(glm::vec3(1.0f, 0.0f, 0.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+    temp = getSquare(glm::vec3(-1.0f, 0.0f, 0.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+    temp = getSquare(glm::vec3(0.0f, 1.0f, 0.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+    temp = getSquare(glm::vec3(0.0f, -1.0f, 0.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+    temp = getSquare(glm::vec3(0.0f, 0.0f, 1.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+    temp = getSquare(glm::vec3(0.0f, 0.0f, -1.0f));
+    Vertices.insert(Vertices.end(), temp.begin(), temp.end());
+    temp.clear();
+
+    // 立方体只需要为buffer分配一次空间
+    m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, 24 * sizeof(Vertex), false);
     // 绑定VAO
     glBufferSubData(GL_ARRAY_BUFFER, 0, Vertices.size() * sizeof(Vertex), &Vertices[0]); // No allocation, only send data
     m_VAO->addBuffer(*m_VertexBuffer, *m_Layout);

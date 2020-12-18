@@ -38,7 +38,7 @@ void Cylinder::updateSubdivision(int Steps)
     double Theta = 0;
     double deltaTheta = M_PI * 2 / m_Steps;
 
-    // 第一部分，放入点
+    // 第一部分，放入vertex
     for (int i = 0;i < m_Steps; ++i)
     {
         float upperX = m_Scale.w * m_Scale.z * cos(Theta);
@@ -47,11 +47,22 @@ void Cylinder::updateSubdivision(int Steps)
         float upperZ = m_Scale.w * m_Scale.z * sin(Theta);
         float lowerZ = m_Scale.x * m_Scale.z * sin(Theta);
 
+        // 上半部分对应于圆的vertex
         Vertices.push_back({glm::vec3(upperX, y, upperZ), glm::vec3(0.0f, 1.0f, 0.0f),
                             m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        // 上半部分对应于侧面的vertex（法向量是(x, 0, z)）
+        Vertices.push_back({glm::vec3(upperX, y, upperZ), glm::vec3(upperX, 0.0f, upperZ),
+                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+
+        // 下半部分对应于圆的vertex
         Vertices.push_back({glm::vec3(lowerX, -y, lowerZ), glm::vec3(0.0f, -1.0f, 0.0f),
                             m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
+        Vertices.push_back({glm::vec3(lowerX, -y, lowerZ), glm::vec3(lowerX, 0.0f, lowerZ),
+                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
         Theta += deltaTheta;
+
+        /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
     }
     // 两个圆心
     int Center1 = Vertices.size();
@@ -59,18 +70,20 @@ void Cylinder::updateSubdivision(int Steps)
     int Center2 = Vertices.size();
     Vertices.push_back({glm::vec3(0.0f, -m_Scale.y, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
 
-    for (int i = 0;i < 2 * m_Steps; i += 2)
+
+    // 第二部分，放入index
+    // 圆上的点
+    for (int i = 0;i < 4 * m_Steps; i += 4)
     {
-        // 两个圆
-        if (i < 2*m_Steps - 2)
+        if (i < 4 * m_Steps - 4)
         {
             Indices.push_back(Center1);
             Indices.push_back(i);
-            Indices.push_back(i+2);
+            Indices.push_back(i+4);
 
-            Indices.push_back(i+1);
+            Indices.push_back(i+2);
             Indices.push_back(Center2);
-            Indices.push_back(i+3);
+            Indices.push_back(i+6);
         }
         else
         {
@@ -78,31 +91,34 @@ void Cylinder::updateSubdivision(int Steps)
             Indices.push_back(i);
             Indices.push_back(0);
 
-            Indices.push_back(i+1);
+            Indices.push_back(i+2);
             Indices.push_back(Center2);
-            Indices.push_back(1);
+            Indices.push_back(2);
         }
+    }
 
-        // 侧边曲面
-        if (i < 2*m_Steps - 2)
+    // 侧面的点
+    for (int i = 1;i < 4 * m_Steps; i += 4)
+    {
+        if (i < 4 * m_Steps - 6)
         {
             Indices.push_back(i);
-            Indices.push_back(i+1);
-            Indices.push_back(i+3);
-
-            Indices.push_back(i);
-            Indices.push_back(i+3);
             Indices.push_back(i+2);
+            Indices.push_back(i+4);
+
+            Indices.push_back(i+2);
+            Indices.push_back(i+4);
+            Indices.push_back(i+6);
         }
         else
         {
             Indices.push_back(i);
-            Indices.push_back(i+1);
-            Indices.push_back(1);
-
-            Indices.push_back(i);
-            Indices.push_back(1);
+            Indices.push_back(i+2);
             Indices.push_back(0);
+
+            Indices.push_back(0);
+            Indices.push_back(i+2);
+            Indices.push_back(2);
         }
     }
 
@@ -126,12 +142,11 @@ void Cylinder::updateDrawData()
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
-    // 第一部分，上面的圆形
 
     double Theta = 0;
     double deltaTheta = M_PI * 2 / m_Steps;
 
-    // 第一部分，放入点
+    // 第一部分，放入vertex
     for (int i = 0;i < m_Steps; ++i)
     {
         float upperX = m_Scale.w * m_Scale.z * cos(Theta);
@@ -140,11 +155,22 @@ void Cylinder::updateDrawData()
         float upperZ = m_Scale.w * m_Scale.z * sin(Theta);
         float lowerZ = m_Scale.x * m_Scale.z * sin(Theta);
 
+        // 上半部分对应于圆的vertex
         Vertices.push_back({glm::vec3(upperX, y, upperZ), glm::vec3(0.0f, 1.0f, 0.0f),
                             m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        // 上半部分对应于侧面的vertex（法向量是(x, 0, z)）
+        Vertices.push_back({glm::vec3(upperX, y, upperZ), glm::vec3(upperX, 0.0f, upperZ),
+                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+
+        // 下半部分对应于圆的vertex
         Vertices.push_back({glm::vec3(lowerX, -y, lowerZ), glm::vec3(0.0f, -1.0f, 0.0f),
                             m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+        // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
+        Vertices.push_back({glm::vec3(lowerX, -y, lowerZ), glm::vec3(lowerX, 0.0f, lowerZ),
+                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
         Theta += deltaTheta;
+
+        /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
     }
     // 两个圆心
     int Center1 = Vertices.size();
@@ -152,18 +178,20 @@ void Cylinder::updateDrawData()
     int Center2 = Vertices.size();
     Vertices.push_back({glm::vec3(0.0f, -m_Scale.y, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
 
-    for (int i = 0;i < 2 * m_Steps; i += 2)
+
+    // 第二部分，放入index
+    // 圆上的点
+    for (int i = 0;i < 4 * m_Steps; i += 4)
     {
-        // 两个圆
-        if (i < 2*m_Steps - 2)
+        if (i < 4 * m_Steps - 4)
         {
             Indices.push_back(Center1);
             Indices.push_back(i);
-            Indices.push_back(i+2);
+            Indices.push_back(i+4);
 
-            Indices.push_back(i+1);
+            Indices.push_back(i+2);
             Indices.push_back(Center2);
-            Indices.push_back(i+3);
+            Indices.push_back(i+6);
         }
         else
         {
@@ -171,31 +199,34 @@ void Cylinder::updateDrawData()
             Indices.push_back(i);
             Indices.push_back(0);
 
-            Indices.push_back(i+1);
+            Indices.push_back(i+2);
             Indices.push_back(Center2);
-            Indices.push_back(1);
+            Indices.push_back(2);
         }
+    }
 
-        // 侧边曲面
-        if (i < 2*m_Steps - 2)
+    // 侧面的点
+    for (int i = 1;i < 4 * m_Steps; i += 4)
+    {
+        if (i < 4 * m_Steps - 6)
         {
             Indices.push_back(i);
-            Indices.push_back(i+1);
-            Indices.push_back(i+3);
-
-            Indices.push_back(i);
-            Indices.push_back(i+3);
             Indices.push_back(i+2);
+            Indices.push_back(i+4);
+
+            Indices.push_back(i+2);
+            Indices.push_back(i+4);
+            Indices.push_back(i+6);
         }
         else
         {
             Indices.push_back(i);
-            Indices.push_back(i+1);
-            Indices.push_back(1);
-
-            Indices.push_back(i);
-            Indices.push_back(1);
+            Indices.push_back(i+2);
             Indices.push_back(0);
+
+            Indices.push_back(0);
+            Indices.push_back(i+2);
+            Indices.push_back(2);
         }
     }
 

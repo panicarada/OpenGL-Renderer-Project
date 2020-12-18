@@ -1,0 +1,13 @@
+prefix=/usr/local/Cellar/glfw/3.3.2
+exec_prefix=${prefix}
+includedir=/usr/local/Cellar/glfw/3.3.2/include
+libdir=/usr/local/Cellar/glfw/3.3.2/lib
+
+Name: GLFW
+Description: A multi-platform library for OpenGL, window and input
+Version: 3.3.2
+URL: https://www.glfw.org/
+Requires.private: 
+Libs: -L${libdir} -lglfw
+Libs.private:  -framework Cocoa -framework IOKit -framework CoreFoundation
+Cflags: -I${includedir}

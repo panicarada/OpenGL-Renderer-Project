@@ -36,7 +36,7 @@ void Cylinder::updateSubdivision(int Steps)
     // 第一部分，上面的圆形
 
     double Theta = 0;
-    double deltaTheta = M_PI * 2 / m_Steps;
+    double deltaTheta = M_PI * 2 / (m_Steps-1);
 
     // 第一部分，放入vertex
     for (int i = 0;i < m_Steps; ++i)
@@ -144,7 +144,7 @@ void Cylinder::updateDrawData()
 
 
     double Theta = 0;
-    double deltaTheta = M_PI * 2 / m_Steps;
+    double deltaTheta = M_PI * 2 / (m_Steps - 1);
 
     // 第一部分，放入vertex
     for (int i = 0;i < m_Steps; ++i)

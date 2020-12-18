@@ -34,7 +34,7 @@ void Cone::updateSubdivision(int Steps)
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
     double Theta = 0;
-    double deltaTheta = M_PI * 2 / m_Steps;
+    double deltaTheta = M_PI * 2 / (m_Steps - 1);
     // 第一部分，放入点
     for (int i = 0;i < m_Steps; ++i)
     {
@@ -119,7 +119,7 @@ void Cone::updateDrawData()
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
     double Theta = 0;
-    double deltaTheta = M_PI * 2 / m_Steps;
+    double deltaTheta = M_PI * 2 / (m_Steps-1);
     // 第一部分，放入点
     for (int i = 0;i < m_Steps; ++i)
     {

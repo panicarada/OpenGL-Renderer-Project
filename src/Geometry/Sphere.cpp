@@ -37,7 +37,7 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
     // 随机数
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_real_distribution<> distribution(-0.1f, 0.2f);//uniform distribution between 0 and 1
+    std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
 
     for (int i = 0;i < m_VerticalSteps; ++i)
     {
@@ -100,7 +100,7 @@ void Sphere::updateDrawData()
     // 随机数
     std::random_device rd;
     std::mt19937 generator(rd());
-    std::uniform_real_distribution<> distribution(-0.1f, 0.2f);//uniform distribution between 0 and 1
+    std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
 
     for (int i = 0;i < m_VerticalSteps; ++i)
     {

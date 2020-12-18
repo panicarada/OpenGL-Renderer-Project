@@ -15,6 +15,7 @@ void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回�
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods); // 键盘回调（指定Action后，长按只会响应一次）函数
 
 std::shared_ptr<Camera> camera = nullptr;
+test::Test* currentTest = nullptr;
 
 // GUI库
 #include "imgui.h"
@@ -112,7 +113,6 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    test::Test* currentTest = nullptr;
     test::TestMenu* testMenu = new test::TestMenu(currentTest);
     currentTest = testMenu;
 
@@ -191,16 +191,25 @@ void MouseCallback(GLFWwindow* window, double xPos, double yPos)
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (camera && key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    { // 相机漫游状态
-        camera->isFPS = !camera->isFPS;
-        if (camera->isFPS)
-        { // 禁用鼠标
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (action == GLFW_PRESS)
+    {
+        if (camera && key == GLFW_KEY_SPACE)
+        { // 相机漫游状态
+            camera->isFPS = !camera->isFPS;
+            if (camera->isFPS)
+            { // 禁用鼠标
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
+            else // 开启鼠标
+            {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            }
         }
-        else // 开启鼠标
-        {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        if (currentTest && key == GLFW_KEY_BACKSPACE)
+        { // 删除物体
+//            std::cout << key << std::endl;
+            currentTest->OnKeyAction(key);
         }
     }
+
 }

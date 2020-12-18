@@ -46,7 +46,7 @@ void test::TestGeometry::OnRender()
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto geometry : m_GeometryGroup)
+    for (auto geometry : m_GeometrySet)
     {
 
         geometry->draw();
@@ -59,42 +59,46 @@ void test::TestGeometry::OnImGuiRender()
     /* 添加集合物体 */
     if (ImGui::Button("add sphere"))
     {
-        m_GeometryGroup.push_back(std::make_shared<Sphere>(m_Camera, m_Shader));
+        auto sphere = std::make_shared<Sphere>(m_Camera, m_Shader);
+        m_GeometrySet.insert(sphere);
         // 保证创建物体总在相机前面
-        m_GeometryGroup.back()->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
-        selectedGeometry = m_GeometryGroup.back(); // 总是保证新加的物体是先被选中的
+        sphere->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        selectedGeometry = sphere; // 总是保证新加的物体是先被选中的
     }
     if (ImGui::Button("add cube"))
     {
-        m_GeometryGroup.push_back(std::make_shared<Cube>(m_Camera, m_Shader));
+        auto cube = std::make_shared<Cube>(m_Camera, m_Shader);
+        m_GeometrySet.insert(cube);
         // 保证创建物体总在相机前面
-        m_GeometryGroup.back()->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
-        selectedGeometry = m_GeometryGroup.back(); // 总是保证新加的物体是先被选中的
+        cube->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        selectedGeometry = cube; // 总是保证新加的物体是先被选中的
     }
     if (ImGui::Button("add cone"))
     {
-        m_GeometryGroup.push_back(std::make_shared<Cone>(m_Camera, m_Shader));
+        auto cone = std::make_shared<Cone>(m_Camera, m_Shader);
+        m_GeometrySet.insert(cone);
         // 保证创建物体总在相机前面
-        m_GeometryGroup.back()->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
-        selectedGeometry = m_GeometryGroup.back(); // 总是保证新加的物体是先被选中的
+        cone->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        selectedGeometry = cone; // 总是保证新加的物体是先被选中的
     }
     if (ImGui::Button("add cylinder"))
     {
-        m_GeometryGroup.push_back(std::make_shared<Cylinder>(m_Camera, m_Shader));
+        auto cylinder = std::make_shared<Cylinder>(m_Camera, m_Shader);
+        m_GeometrySet.insert(cylinder);
         // 保证创建物体总在相机前面
-        m_GeometryGroup.back()->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
-        selectedGeometry = m_GeometryGroup.back(); // 总是保证新加的物体是先被选中的
+        cylinder->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        selectedGeometry = cylinder; // 总是保证新加的物体是先被选中的
     }
     if (ImGui::Button("add Prism"))
     {
-        auto cylinder = std::make_shared<Cylinder>(m_Camera, m_Shader);
-        m_GeometryGroup.push_back(cylinder);
+        auto prism = std::make_shared<Cylinder>(m_Camera, m_Shader);
+        m_GeometrySet.insert(prism);
         // 保证创建物体总在相机前面
-        cylinder->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
-        selectedGeometry = m_GeometryGroup.back(); // 总是保证新加的物体是先被选中的
+        prism->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        selectedGeometry = prism; // 总是保证新加的物体是先被选中的
 
         selectedGeometry->Comment = "Prism"; //备注一下它是棱柱
-        cylinder->updateSubdivision(5); // 细分度小点
+        prism->updateSubdivision(5); // 细分度小点
     }
     if (!selectedGeometry)
     {
@@ -153,14 +157,15 @@ void test::TestGeometry::OnImGuiRender()
         }
     }
 
-//    std::unordered_map<std::string, std::shared_ptr<Geometry>> items; // 字符串到指针的映射表
+    std::unordered_map<int, std::shared_ptr<Geometry>> map; // 整数到指针的映射表
 
     std::vector<std::string> items;
-    int selectedItem = -1;
+    int selectedItem = -1; // 选中物体在列表中的位置
+    std::shared_ptr<Geometry> selectedItemPtr;
     /* 把现在的几何物体做成listbox，这部分是参考ImGui官方示例的 */
-    for (int i = 0; i < m_GeometryGroup.size(); ++i)
+    int i = 0;
+    for (auto geometry : m_GeometrySet)
     {
-        auto geometry = m_GeometryGroup[i];
         if (geometry->Comment == "Prism")
         {
             items.push_back("Geometry::Prism" + std::to_string(i));
@@ -173,11 +178,13 @@ void test::TestGeometry::OnImGuiRender()
         {
             selectedItem = i;
         }
+        map[i] = geometry;
+        ++i;
     }
 
     if (ImGui::ListBox("Geometries", &selectedItem, items))
     {
-        selectedGeometry = m_GeometryGroup[selectedItem];
+        selectedGeometry = map[selectedItem];
     }
 
     if (ImGui::ColorEdit4("Color", &selectedGeometry->m_Color.x))
@@ -221,7 +228,6 @@ test::TestGeometry::TestGeometry()
 
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
-    selectedIndex = -1;
     m_Camera = std::make_shared<Camera>();
     m_Camera->setProjection(glm::perspective(30.0f, 1.0f, 0.1f, 100.0f));
     selectedGeometry = nullptr;
@@ -233,4 +239,21 @@ test::TestGeometry::TestGeometry()
     Floor->m_Color = glm::vec4(0.18f, 0.6f, 0.96f, 1.0f);
     Floor->updateDrawData();
     Floor->m_Position = m_Camera->getDirection() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
+}
+
+void test::TestGeometry::OnKeyAction(int key)
+{
+    if (key == GLFW_KEY_BACKSPACE)
+    { // 删除当前选中物体
+        std::cout << "deleting" << std::endl;
+        if (selectedGeometry)
+        {
+            m_GeometrySet.erase(selectedGeometry);
+            if (!m_GeometrySet.empty())
+            {
+                selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
+            }
+            else selectedGeometry = nullptr;
+        }
+    }
 }

@@ -6,6 +6,7 @@
 
 #include "Test.h"
 #include "Geometry.h"
+#include <set>
 
 namespace test
 {
@@ -19,16 +20,15 @@ namespace test
         void OnUpdate(GLFWwindow *Window, float deltaTime) override;
         void OnRender() override;
         void OnImGuiRender() override;
+        void OnKeyAction(int key) override;
         inline std::shared_ptr<Camera> getCamera() override
         {
             return m_Camera;
         }
     private:
-        // 几何物体的集合
-        std::vector<std::shared_ptr<Geometry>> m_GeometryGroup;
-        std::shared_ptr<Geometry> selectedGeometry;
-        std::shared_ptr<Geometry> Floor;
-        int selectedIndex;
+        std::set<std::shared_ptr<Geometry>> m_GeometrySet; // 几何物体的集合
+        std::shared_ptr<Geometry> selectedGeometry; // 当前选中物体
+        std::shared_ptr<Geometry> Floor; // 地板
 
         std::shared_ptr<Shader> m_Shader;
         std::shared_ptr<Camera> m_Camera;

@@ -35,15 +35,23 @@ in vec3 FragPosition;
 uniform vec3 u_LightPosition; // 光源位置
 uniform vec4 u_LightColor; // 光源颜色
 uniform vec4 u_Ambient; // 环境光
-// uniform vec4 u_Color;
+uniform vec3 u_CameraPosition; // 相机位置
 
 void main()
 {
 	vec3 Norm = normalize(v_Normal);
 	vec3 LightDirection = normalize(u_LightPosition - FragPosition);
-	float diff = max(dot(Norm, LightDirection), 0.0f);
-	vec4 diffuse = diff * u_LightColor;
+	float Diff = max(dot(Norm, LightDirection), 0.0f);
+	vec4 Diffuse = Diff * u_LightColor;
+
+	// specular
+	float SpecularStrength = 0.5f; // 反射强度
+	vec3 ViewDirection = normalize(u_CameraPosition - FragPosition);
+	vec3 ReflectDir = reflect(-LightDirection, Norm);
+	float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), 32);
+	vec4 Specular = SpecularStrength * Spec * u_LightColor;
 
 
-	FragColor = (u_Ambient + diffuse) * v_Color;
+
+	FragColor = (u_Ambient + Diffuse + Specular) * v_Color;
 }

@@ -45,6 +45,11 @@ void test::TestGeometry::OnRender()
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (m_Camera)
+    { // 输入相机位置
+        auto Position = m_Camera->getPosition();
+        m_Shader->setUniform3f("u_CameraPosition", Position.x, Position.y, Position.z);
+    }
 
     for (auto geometry : m_GeometrySet)
     {

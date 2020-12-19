@@ -76,7 +76,7 @@ void test::TestGeometry::OnImGuiRender()
         prism->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
         selectedGeometry = prism; // 总是保证新加的物体是先被选中的
 
-        selectedGeometry->Comment = "Prism"; //备注一下它是棱柱
+        selectedGeometry->Tag = "Prism"; //备注一下它是棱柱
         prism->updateSubdivision(5); // 细分度小点
     }
     if (ImGui::Button("add light"))
@@ -89,8 +89,6 @@ void test::TestGeometry::OnImGuiRender()
 
         Light::updateData(m_Shader, m_LightSet);
     }
-
-
 
     /* 光源的集合 */
     std::unordered_map<int, std::shared_ptr<Light>> LightMap; // 整数到指针的映射表
@@ -141,7 +139,7 @@ void test::TestGeometry::OnImGuiRender()
     i = 0;
     for (auto geometry : m_GeometrySet)
     {
-        if (geometry->Comment == "Prism")
+        if (geometry->Tag == "Prism")
         {
             items.push_back("Geometry::Prism" + std::to_string(i));
         }
@@ -178,7 +176,7 @@ void test::TestGeometry::OnImGuiRender()
         m_Steps = cylinder->m_Steps;
         int minSteps = 20;
         int maxSteps = 1000;
-        if (cylinder->Comment == "Prism")
+        if (cylinder->Tag == "Prism")
         { // 棱柱面的细分度小点
             minSteps = 3;
             maxSteps = 10;
@@ -237,6 +235,7 @@ test::TestGeometry::TestGeometry()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
+
 
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();

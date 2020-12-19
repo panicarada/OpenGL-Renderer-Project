@@ -33,7 +33,6 @@ public:
         m_Shader->setUniformMat4f("u_model", Model);
         m_Shader->setUniformMat4f("u_projection", Projection);
         m_Shader->setUniformMat4f("u_view", View);
-
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
     }
     // 根据旋转角度重建旋转矩阵
@@ -77,7 +76,7 @@ private:
     glm::quat m_qYaw; // 偏航角对应四元数
     glm::quat m_qRoll; // 滚转角对应四元数
 public:
-    std::string Comment; // 关于该几何体的一些描述
+    std::string Tag; // 关于该几何体的一些描述
 
     /* 几何参数 */
     // 三个方向的拉伸，相对于几何物体的坐标

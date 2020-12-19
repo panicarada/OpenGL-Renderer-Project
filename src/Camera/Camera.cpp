@@ -17,7 +17,6 @@ void Camera::OnKeyAction(GLFWwindow *Window, float deltaTime)
     float Velocity = MoveSpeed * deltaTime;
     if (glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS)
     {
-//        std::cout << "Moving Forward! " << Velocity << std::endl;
         m_Position += m_Direction * Velocity;
     }
     if (glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS)
@@ -54,7 +53,6 @@ void Camera::updateCameraVectors()
 
     // 纠正项
     const auto m_qRoll = glm::angleAxis(glm::radians(180.0f), m_InitDirection);
-
 
     glm::quat Orientation = glm::normalize(m_qYaw * m_qPitch * m_qRoll);
     glm::mat4 Rotate = glm::mat4_cast(Orientation);

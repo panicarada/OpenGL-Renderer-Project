@@ -123,6 +123,7 @@ int main()
     testMenu->RegisterTest<test::TestGeometry>("Geometry");
 
 
+
     Renderer renderer;
     float lastTime = 0.0f;
 

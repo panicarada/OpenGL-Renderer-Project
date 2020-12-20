@@ -33,6 +33,13 @@ public:
         m_Shader->setUniformMat4f("u_model", Model);
         m_Shader->setUniformMat4f("u_projection", Projection);
         m_Shader->setUniformMat4f("u_view", View);
+        // 设置材质
+        m_Shader->setUniform4f("u_Material.Ambient", m_Material.Ambient);
+        m_Shader->setUniform4f("u_Material.Diffuse", m_Material.Diffuse);
+        m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
+        m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
+
+
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
     }
     // 根据旋转角度重建旋转矩阵
@@ -53,9 +60,10 @@ public:
         return glm::translate(glm::mat4(1.0f), (m_Position)) * m_RotateMatrix;
     }
     explicit Geometry(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader>& Shader, const glm::vec3 &Position = glm::vec3(0.0f, 0.0f, 0.0f),
-             Rotation rotation = {0.0f, 0.0f, 0.0f},
-             Scale Scale = {1.0f, 1.0f, 1.0f, 1.0f})
-     : m_Camera(Camera), m_Shader(Shader), m_Position(Position), m_Rotation(rotation), m_Scale(Scale), m_Color(0.6f, 0.12f, 0.9f, 1.0f)
+             const Material& material = {glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), 1.0f},
+             const Rotation& rotation = {0.0f, 0.0f, 0.0f},
+             const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f})
+     : m_Camera(Camera), m_Shader(Shader), m_Position(Position), m_Rotation(rotation), m_Scale(Scale), m_Material(material), m_Color(0.48f, 0.75f, 0.81f, 1.0f)
     {
         m_VAO = std::make_unique<VertexArray>();
         m_Layout = std::make_unique<VertexBufferLayout>();
@@ -78,9 +86,11 @@ private:
 public:
     std::string Tag; // 关于该几何体的一些描述
 
+    Material m_Material; // 材质
+    glm::vec4 m_Color; // 颜色
+
     /* 几何参数 */
     // 三个方向的拉伸，相对于几何物体的坐标
-    glm::vec4 m_Color;
     Scale m_Scale;
     glm::vec3 m_Position; // 物体位置
     glm::mat4 m_RotateMatrix; // 旋转矩阵

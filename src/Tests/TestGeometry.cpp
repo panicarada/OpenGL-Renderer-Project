@@ -123,6 +123,10 @@ void test::TestGeometry::OnImGuiRender()
         {
             Light::updateData(m_Shader, m_LightSet);
         }
+        if (ImGui::SliderFloat("Light Brightness", &selectedLight->Brightness, 0.5f, 5.0f))
+        {
+            Light::updateData(m_Shader, m_LightSet);
+        }
     }
 
 
@@ -210,10 +214,30 @@ void test::TestGeometry::OnImGuiRender()
             sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
         }
     }
+
+    // 材质和颜色
     if (ImGui::ColorEdit4("Color", &selectedGeometry->m_Color.x))
     {
         selectedGeometry->updateDrawData();
     }
+    if (ImGui::ColorEdit4("Material Ambient", &selectedGeometry->m_Material.Ambient[0]))
+    {
+//        selectedGeometry->updateDrawData();
+    }
+    if (ImGui::ColorEdit4("Material Diffuse", &selectedGeometry->m_Material.Diffuse[0]))
+    {
+//        selectedGeometry->updateDrawData();
+    }
+    if (ImGui::ColorEdit4("Material Specular", &selectedGeometry->m_Material.Specular[0]))
+    {
+//        selectedGeometry->updateDrawData();
+    }
+    if (ImGui::SliderFloat("Material Highlight", &selectedGeometry->m_Material.Highlight, 1.0f, 180.0f))
+    {
+//        selectedGeometry->updateRotation();
+    }
+
+
     if (selectedGeometry->getClassName() == "Geometry::Cylinder")
     {
         if (ImGui::SliderFloat4("Scale", &selectedGeometry->m_Scale.w, 0.0f, 10.0f))

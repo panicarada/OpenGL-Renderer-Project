@@ -8,8 +8,8 @@
 
 
 Sphere::Sphere(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader> &shader,
-               const glm::vec3 &position, Rotation rotation, Scale Scale)
-   : Geometry(Camera, shader, position, rotation, Scale)
+               const glm::vec3 &position, const Material& material, const Rotation& rotation, const Scale& Scale)
+   : Geometry(Camera, shader, position, material, rotation, Scale)
 {
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量

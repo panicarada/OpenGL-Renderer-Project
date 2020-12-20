@@ -65,6 +65,15 @@ struct Rotation
     float Roll; // 滚转角
 };
 
+// 物体的材质
+struct Material
+{
+    glm::vec4 Ambient; // 环境光照部分
+    glm::vec4 Diffuse; // 漫射光部分
+    glm::vec4 Specular; // 镜面光部分
+    float Highlight; // 亮度
+};
+
 namespace ImGui
 { // 重写ImGui一些Api，方便动态处理
     static auto vector_getter = [](void* vec, int idx, const char** out_text)

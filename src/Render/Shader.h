@@ -38,8 +38,12 @@ public:
     void setUniform1i(const std::string Name, int Value);
     void setUniform1iv(const std::string Name, const int Count, const int *Value);
     void setUniform1f(const std::string Name, float Value);
+    inline void setUniform1fv(const std::string Name, const std::vector<float>& Value)
+    {
+        DebugCall(glUniform1fv(getUniformLocation(Name), Value.size(), &Value[0]));
+    }
     void setUniform3f(const std::string Name, float v0, float v1, float v2);
-    inline void setUniform3fv(const std::string Name, std::vector<glm::vec3> &Value)
+    inline void setUniform3fv(const std::string Name, const std::vector<glm::vec3> &Value)
     {
         DebugCall(glUniform3fv(getUniformLocation(Name), Value.size(), &Value[0][0]));
     }
@@ -49,6 +53,10 @@ public:
     }
 
     void setUniform4f(const std::string Name, float v0, float v1, float v2, float v3);
+    inline void setUniform4f(const std::string Name, const glm::vec4& v)
+    {
+        DebugCall(glUniform4f(getUniformLocation(Name), v[0], v[1], v[2], v[3]));
+    }
     void setUniformMat4f(const std::string Name, glm::mat4& matrix);
 
 private:

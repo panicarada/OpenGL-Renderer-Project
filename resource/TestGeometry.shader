@@ -32,9 +32,21 @@ in vec4 v_Color;
 in vec3 v_Normal;
 in vec3 FragPosition;
 
+struct Material
+{
+	vec4 Ambient;
+	vec4 Diffuse;
+	vec4 Specular; 
+	float Highlight;
+};
+uniform Material u_Material;
+
+
 uniform int u_LightNum; // 光源数目
 uniform vec3 u_LightPositions[6]; // 光源位置
 uniform vec4 u_LightColor[6]; // 光源颜色
+uniform float u_LightBrightness[6]; // 光源亮度
+
 uniform vec4 u_Ambient; // 环境光
 uniform vec3 u_CameraPosition; // 相机位置
 
@@ -48,7 +60,7 @@ void main()
 	{
 		LightDirection[i] = normalize(u_LightPositions[i] - FragPosition);
 		float Diff = max(dot(Norm, LightDirection[i]), 0.0f);
-		Diffuse += Diff * u_LightColor[i];
+		Diffuse += Diff * u_LightColor[i] * u_LightBrightness[i];
 	}
 
 
@@ -60,9 +72,9 @@ void main()
 	for (int i = 0;i < u_LightNum; ++i)
 	{
 		vec3 ReflectDir = reflect(-LightDirection[i], Norm);
-		float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), 32);
-		Specular += SpecularStrength * Spec * u_LightColor[i];
+		float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);
+		Specular += SpecularStrength * Spec * u_LightColor[i] * u_LightBrightness[i];
 	}
 
-	FragColor = (u_Ambient + Diffuse + Specular) * v_Color; 
+	FragColor = (0.5 * u_Ambient * u_Material.Ambient + 1.0 * u_Material.Diffuse * Diffuse + 1.0 * u_Material.Specular * Specular) * v_Color; 
 }

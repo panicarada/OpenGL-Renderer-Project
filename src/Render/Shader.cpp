@@ -7,7 +7,7 @@
 Shader::Shader(const std::string &Filepath)
 {
     ShaderProgramSource source = parseShader(Filepath);
-    m_RendererID = createShader(source.VertexSource, source.FragmentSource);
+    m_RendererID = createShader(source.VertexSource, source.FragmentSource, source.GeometrySource);
 }
 
 Shader::~Shader()
@@ -21,9 +21,9 @@ ShaderProgramSource Shader::parseShader(const std::string &File)
     std::string line;
     enum class ShaderType
     {
-        NONE = -1, VERTEX = 0, FRAGMENT = 1
+        NONE = -1, VERTEX = 0, FRAGMENT = 1, GEOMETRY = 2
     };
-    std::stringstream ss[2];
+    std::stringstream ss[3];
     ShaderType type = ShaderType::NONE;
     while (getline(stream, line))
     {
@@ -37,29 +37,42 @@ ShaderProgramSource Shader::parseShader(const std::string &File)
             {
                 type = ShaderType::FRAGMENT;
             }
+            else if (line.find("geometry") != std::string::npos)
+            {
+                type = ShaderType::GEOMETRY;
+            }
         }
         else
         {
             ss[(int)type] << line << "\n";
         }
     }
-    return {ss[0].str(), ss[1].str()};
+    return {ss[0].str(), ss[1].str(), ss[2].str()};
 }
 
-unsigned int Shader::createShader(const std::string &vertexShader, const std::string &fragmentShader)
+unsigned int Shader::createShader(const std::string &vertexShader, const std::string &fragmentShader, const std::string &geometryShader)
 { // 已经获取了两个shader的代码，现在载入OpenGL
     unsigned int program = glCreateProgram();
     unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
     unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
+    unsigned int gs = compileShader(GL_GEOMETRY_SHADER, geometryShader);
 
     glAttachShader(program, vs);
     glAttachShader(program, fs);
+    if (!geometryShader.empty())
+    {
+        glAttachShader(program, gs);
+    }
+
     glLinkProgram(program);
     glValidateProgram(program);
 
     glDeleteShader(vs);
     glDeleteShader(fs);
-
+    if (!geometryShader.empty())
+    {
+        glDeleteShader(gs);
+    }
     return program;
 }
 

@@ -4,6 +4,7 @@
 
 #pragma once
 #include "Basic.h"
+#include "Shader.h"
 #include <set>
 
 class Light

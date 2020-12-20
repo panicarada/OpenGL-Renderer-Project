@@ -2,19 +2,20 @@
 // Created by 邱泽鸿 on 2020/12/14.
 //
 
-#include "TestGeometry.h"
+#include "TestShadow.h"
 #include "Sphere.h"
 #include "Cube.h"
 #include "Cylinder.h"
 #include "Cone.h"
+#include <set>
 #include <unordered_map>
 
-void test::TestGeometry::OnUpdate(GLFWwindow *Window, float deltaTime)
+void test::TestShadow::OnUpdate(GLFWwindow *Window, float deltaTime)
 {
     m_Camera->OnKeyAction(Window, deltaTime);
 }
 
-void test::TestGeometry::OnRender()
+void test::TestShadow::OnRender()
 {
     DebugCall(glClearColor(0.1f, 0.3f, 0.5f, 0.6f));
 
@@ -33,7 +34,7 @@ void test::TestGeometry::OnRender()
     Floor->draw();
 }
 
-void test::TestGeometry::OnImGuiRender()
+void test::TestShadow::OnImGuiRender()
 {
     /* 添加集合物体 */
     if (ImGui::Button("add sphere"))
@@ -79,50 +80,20 @@ void test::TestGeometry::OnImGuiRender()
         selectedGeometry->Tag = "Prism"; //备注一下它是棱柱
         prism->updateSubdivision(5); // 细分度小点
     }
-    if (ImGui::Button("add light"))
-    {
-        auto light = std::make_shared<Light>(m_Shader);
-        m_LightSet.insert(light);
-        // 保证创建光源总在相机后面
-        light->m_Position = m_Camera->getPosition() - 2.0f * m_Camera->getDirection();
-        selectedLight = light; // 总是保证新加的光源是先被选中的
 
-        Light::updateData(m_Shader, m_LightSet);
+    if (ImGui::ColorEdit4("Light Color", &m_Light->m_Color[0]))
+    {
+        std::set<std::shared_ptr<Light>> temp;
+        temp.insert(m_Light);
+        Light::updateData(m_Shader, temp);
+        m_Shadow->updateShadowData();
     }
-
-    /* 光源的集合 */
-    std::unordered_map<int, std::shared_ptr<Light>> LightMap; // 整数到指针的映射表
-    std::vector<std::string> items;
-    int selectedItem = -1; // 选中光源在列表中的位置
-    /* 把现在的光源做成listbox，这部分是参考ImGui官方示例的 */
-    int i = 0;
-    for (auto light : m_LightSet)
+    if (ImGui::SliderFloat3("Light Position", &m_Light->m_Position.x, -10.0f, 10.0f))
     {
-        light->m_ID = i;
-        items.push_back(light->m_Name + std::to_string(i));
-        if (selectedLight == light)
-        {
-            selectedItem = i;
-        }
-        LightMap[i] = light;
-        ++i;
-    }
-
-    if (ImGui::ListBox("Lights", &selectedItem, items))
-    {
-        selectedLight = LightMap[selectedItem];
-    }
-
-    if (selectedLight)
-    {
-        if (ImGui::ColorEdit4("Light Color", &selectedLight->m_Color[0]))
-        {
-            Light::updateData(m_Shader, m_LightSet);
-        }
-        if (ImGui::SliderFloat3("Light Position", &selectedLight->m_Position.x, -10.0f, 10.0f))
-        {
-            Light::updateData(m_Shader, m_LightSet);
-        }
+        std::set<std::shared_ptr<Light>> temp;
+        temp.insert(m_Light);
+        Light::updateData(m_Shader, temp);
+        m_Shadow->updateShadowData();
     }
 
 
@@ -134,9 +105,10 @@ void test::TestGeometry::OnImGuiRender()
 
     /* 物体的集合 */
     std::unordered_map<int, std::shared_ptr<Geometry>> GeometryMap; // 整数到指针的映射表
-    items.clear();
+    std::vector<std::string> items;
+    int selectedItem = -1;
     /* 把现在的几何物体做成listbox，这部分是参考ImGui官方示例的 */
-    i = 0;
+    int i = 0;
     for (auto geometry : m_GeometrySet)
     {
         if (geometry->Tag == "Prism")
@@ -231,13 +203,11 @@ void test::TestGeometry::OnImGuiRender()
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
-test::TestGeometry::TestGeometry()
+test::TestShadow::TestShadow()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
 //    glDepthMask(GL_FALSE);
-
-
 
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
@@ -253,42 +223,24 @@ test::TestGeometry::TestGeometry()
     Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
 
     // 光源
-//    auto LightPosition = m_Camera->getPosition() - 10.0f * m_Camera->getDirection() + glm::vec3(-2.0f, 5.0f, 0.0f);
-//    m_Shader->setUniform3f("u_LightPosition", LightPosition.x, LightPosition.y, LightPosition.z);
-//    m_Shader->setUniform4f("u_LightColor", 1.0f, 1.0f, 1.0f, 1.0f);
-    m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
+    m_Light = std::make_shared<Light>(m_Shader);
+    // 阴影
+    m_Shadow = std::make_shared<Shadow>(m_Light);
 }
 
-void test::TestGeometry::OnKeyAction(int key, int mods)
+void test::TestShadow::OnKeyAction(int key, int mods)
 {
     if (key == GLFW_KEY_BACKSPACE)
-    { // 删除当前选中物体/光源
-        if (mods == GLFW_MOD_SHIFT)
-        { // 组合键删除光源
-            std::cout << "deleting light" << std::endl;
-            if (selectedLight)
-            {
-                m_LightSet.erase(selectedLight);
-                if (!m_LightSet.empty())
-                {
-                    selectedLight = *m_LightSet.begin();
-                }
-                else selectedLight = nullptr;
-                Light::updateData(m_Shader, m_LightSet);
-            }
-        }
-        else
+    { // 删除当前选中物体
+        std::cout << "deleting object" << std::endl;
+        if (selectedGeometry)
         {
-            std::cout << "deleting object" << std::endl;
-            if (selectedGeometry)
+            m_GeometrySet.erase(selectedGeometry);
+            if (!m_GeometrySet.empty())
             {
-                m_GeometrySet.erase(selectedGeometry);
-                if (!m_GeometrySet.empty())
-                {
-                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
-                }
-                else selectedGeometry = nullptr;
+                selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
             }
+            else selectedGeometry = nullptr;
         }
     }
 }

@@ -9,6 +9,7 @@
 #include "Tests/TestCube.h"
 #include "Tests/TestCylinder.h"
 #include "Tests/TestGeometry.h"
+#include "Tests/TestDepth.h"
 
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回调函数
@@ -121,6 +122,8 @@ int main()
     testMenu->RegisterTest<test::TestCube>("Cube");
     testMenu->RegisterTest<test::TestCylinder>("Cylinder");
     testMenu->RegisterTest<test::TestGeometry>("Geometry");
+    testMenu->RegisterTest<test::TestDepth>("Depth");
+
 
 
 

@@ -11,6 +11,13 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "stb_image.h"
+#include <omp.h> // Open MP
+
+
+// 电脑核数
+#define CORE_NUM 8
+
+
 // GUI库
 #include "imgui/imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"

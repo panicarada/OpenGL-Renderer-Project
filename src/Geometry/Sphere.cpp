@@ -24,53 +24,52 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
 
 
     // 重新计算球面上的点，并放入buffer中
-    std::vector<Vertex> Vertices;
+//    std::vector<Vertex> Vertices;
+    // 改为并行
+    std::vector<Vertex> Vertices(m_VerticalSteps * m_HorizontalSteps);
 
     // 每遍历到球上某一点，我们就绘制两个相接的三角形，需要6个indices
-    std::vector<unsigned int> Indices;
-
-    double Phi = 0.0;
-    double deltaPhi = M_PI / (m_VerticalSteps-1);
-    double deltaTheta = 2.0 * M_PI / (m_HorizontalSteps-1);
+    std::vector<unsigned int> Indices(6 * (m_VerticalSteps-1) * m_HorizontalSteps);
     // 随机数
     std::random_device rd;
     std::mt19937 generator(rd());
     std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
-
-    for (int i = 0;i < m_VerticalSteps; ++i)
-    {
-        double Theta = 0;
-        double sinPhi = sin(Phi);
-        double cosPhi = cos(Phi);
-        for (int j = 0; j < m_HorizontalSteps; ++j)
+    {// 电脑是八核的
+        #pragma omp parallel for num_thread(CORE_NUM)
+        for (int i = 0; i < m_VerticalSteps; ++i)
         {
-            glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
-                                           m_Scale.z * sin(Theta) * sinPhi);
-            double rand1 = distribution(generator);
-            double rand2 = distribution(generator);
-            double rand3 = distribution(generator);
-
-            Vertices.push_back({Position, glm::normalize(Position),
-                                m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)
-                               }); // 点坐标
-
-//            Theta += deltaTheta;
-
-            if (i < m_VerticalSteps - 1)
+            for (int j = 0; j < m_HorizontalSteps; ++j)
             {
-                Indices.push_back((i) * m_HorizontalSteps + j);
-                Indices.push_back((i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
-                Indices.push_back((i + 1) * m_HorizontalSteps + j);
+                double Theta = 2.0 * M_PI * j / (m_HorizontalSteps - 1);
+                double Phi = M_PI * i / (m_VerticalSteps - 1);
+                double sinPhi = sin(Phi);
+                double cosPhi = cos(Phi);
 
-                Indices.push_back((i) * m_HorizontalSteps + j);
-                Indices.push_back((i) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
-                Indices.push_back((i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
+                glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
+                                               m_Scale.z * sin(Theta) * sinPhi);
+
+                double rand1 = distribution(generator);
+                double rand2 = distribution(generator);
+                double rand3 = distribution(generator);
+
+                Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
+                                                     m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)}; // 点坐标
+
+                // Indices
+                if (i < m_VerticalSteps - 1)
+                {
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 0] = (i) * m_HorizontalSteps + j;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 1] = (i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 2] = (i + 1) * m_HorizontalSteps + j;
+
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 3] = (i) * m_HorizontalSteps + j;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 4] = (i) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 5] = (i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                }
             }
-
-            Theta += deltaTheta;
         }
-        Phi += deltaPhi;
     }
+
 
     // 重新分配空间
     m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, Vertices.size() * sizeof(Vertex), false);
@@ -84,51 +83,50 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
 void Sphere::updateDrawData()
 {
     // 重新计算球面上的点，并放入buffer中
-    std::vector<Vertex> Vertices;
+    //    std::vector<Vertex> Vertices;
+    // 改为并行
+    std::vector<Vertex> Vertices(m_VerticalSteps * m_HorizontalSteps);
 
     // 每遍历到球上某一点，我们就绘制两个相接的三角形，需要6个indices
-    std::vector<unsigned int> Indices;
-
-    double Phi = 0.0;
-    double deltaPhi = M_PI / (m_VerticalSteps-1);
-    double deltaTheta = 2.0 * M_PI / (m_HorizontalSteps-1);
+    std::vector<unsigned int> Indices(6 * (m_VerticalSteps-1) * m_HorizontalSteps);
     // 随机数
     std::random_device rd;
     std::mt19937 generator(rd());
     std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
-
-    for (int i = 0;i < m_VerticalSteps; ++i)
-    {
-        double Theta = 0;
-        double sinPhi = sin(Phi);
-        double cosPhi = cos(Phi);
-        for (int j = 0; j < m_HorizontalSteps; ++j)
+    {// 电脑是八核的
+        #pragma omp parallel for num_thread(CORE_NUM)
+        for (int i = 0; i < m_VerticalSteps; ++i)
         {
-            glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
-                                           m_Scale.z * sin(Theta) * sinPhi);
-            double rand1 = distribution(generator);
-            double rand2 = distribution(generator);
-            double rand3 = distribution(generator);
-
-            Vertices.push_back({Position, glm::normalize(Position),
-                                m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)
-                               }); // 点坐标
-
-            if (i < m_VerticalSteps - 1)
+            for (int j = 0; j < m_HorizontalSteps; ++j)
             {
-                Indices.push_back((i) * m_HorizontalSteps + j);
-                Indices.push_back((i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
-                Indices.push_back((i + 1) * m_HorizontalSteps + j);
+                double Theta = 2.0 * M_PI * j / (m_HorizontalSteps - 1);
+                double Phi = M_PI * i / (m_VerticalSteps - 1);
+                double sinPhi = sin(Phi);
+                double cosPhi = cos(Phi);
 
-                Indices.push_back((i) * m_HorizontalSteps + j);
-                Indices.push_back((i) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
-                Indices.push_back((i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps);
+                glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
+                                               m_Scale.z * sin(Theta) * sinPhi);
+
+                double rand1 = distribution(generator);
+                double rand2 = distribution(generator);
+                double rand3 = distribution(generator);
+
+                Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
+                                                       m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)}; // 点坐标
+
+                // Indices
+                if (i < m_VerticalSteps - 1)
+                {
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 0] = (i) * m_HorizontalSteps + j;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 1] = (i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 2] = (i + 1) * m_HorizontalSteps + j;
+
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 3] = (i) * m_HorizontalSteps + j;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 4] = (i) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                    Indices[6 * i * m_HorizontalSteps + 6*j + 5] = (i + 1) * m_HorizontalSteps + (j + 1) % m_HorizontalSteps;
+                }
             }
-            
-
-            Theta += deltaTheta;
         }
-        Phi += deltaPhi;
     }
 
     // 重新分配空间

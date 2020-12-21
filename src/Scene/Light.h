@@ -21,12 +21,14 @@ public:
         std::vector<glm::vec3> LightPositions;
         std::vector<glm::vec4> LightColors;
         std::vector<float> LightBrightnesses;
+
         for (auto light : LightSet)
         {
             LightPositions.push_back(light->m_Position);
             LightColors.push_back(light->m_Color);
             LightBrightnesses.push_back(light->Brightness);
         }
+
         // 设置和光源有关的uniform
         shader->setUniform1i("u_LightNum", LightSet.size());
         shader->setUniform3fv("u_LightPositions", LightPositions);

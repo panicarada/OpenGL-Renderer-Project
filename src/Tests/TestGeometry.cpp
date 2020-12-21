@@ -179,7 +179,7 @@ void test::TestGeometry::OnImGuiRender()
         auto cylinder = std::dynamic_pointer_cast<Cylinder>(selectedGeometry);
         m_Steps = cylinder->m_Steps;
         int minSteps = 20;
-        int maxSteps = 1000;
+        int maxSteps = 300;
         if (cylinder->Tag == "Prism")
         { // 棱柱面的细分度小点
             minSteps = 3;
@@ -194,7 +194,7 @@ void test::TestGeometry::OnImGuiRender()
     {
         auto cone = std::dynamic_pointer_cast<Cone>(selectedGeometry);
         m_Steps = cone->m_Steps;
-        if (ImGui::SliderInt("Subdivision", &m_Steps, 20, 1000))
+        if (ImGui::SliderInt("Subdivision", &m_Steps, 20, 300))
         {
             cone->updateSubdivision(m_Steps);
         }
@@ -205,11 +205,11 @@ void test::TestGeometry::OnImGuiRender()
         auto sphere = std::dynamic_pointer_cast<Sphere>(selectedGeometry);
         m_HorizontalSteps = sphere->getHorizontalSteps();
         m_VerticalSteps = sphere->getVerticalSteps();
-        if (ImGui::SliderInt("Horizontal Subdivision", &m_HorizontalSteps, 20, 1000))
+        if (ImGui::SliderInt("Horizontal Subdivision", &m_HorizontalSteps, 20, 300))
         { // 只有球体可以使用
             sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
         }
-        if (ImGui::SliderInt("Vertical Subdivision", &m_VerticalSteps, 20, 1000))
+        if (ImGui::SliderInt("Vertical Subdivision", &m_VerticalSteps, 20, 300))
         { // 只有球体可以使用
             sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
         }

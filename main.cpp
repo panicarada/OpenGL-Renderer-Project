@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+
 #include <string>
 #include "Renderer.h"
 
@@ -10,6 +11,7 @@
 #include "Tests/TestCylinder.h"
 #include "Tests/TestGeometry.h"
 #include "Tests/TestDepth.h"
+
 
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回调函数
@@ -24,6 +26,9 @@ test::Test* currentTest = nullptr;
 #include "imgui/examples/imgui_impl_opengl3.h"
 int main()
 {
+    // 设置并行数目
+    omp_set_num_threads(CORE_NUM);
+
     // Initialise GLFW
     if( !glfwInit() )
     {
@@ -60,9 +65,9 @@ int main()
     #ifdef __DEBUG__
     window = glfwCreateWindow( 960, 960, "My App", NULL, NULL);
     #else
-    window = glfwCreateWindow( 1280, 1280, "My App", NULL, NULL);
+    window = glfwCreateWindow( 1280, 1280, "My App", nullptr, nullptr);
     #endif
-    if( window == NULL )
+    if( window == nullptr )
     {
         fprintf( stderr, "Failed to open GLFW window.\n" );
         glfwTerminate();
@@ -114,7 +119,7 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    test::TestMenu* testMenu = new test::TestMenu(currentTest);
+    auto testMenu = new test::TestMenu(currentTest);
     currentTest = testMenu;
 
     testMenu->RegisterTest<test::TestBatchColor>("Batch Color");
@@ -137,7 +142,7 @@ int main()
 
     while( !glfwWindowShouldClose(window) )
     {
-        DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
+        DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f))
         renderer.clear();
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -146,7 +151,6 @@ int main()
         if (currentTest)
         {
             camera = currentTest->getCamera();
-
             float currentTime = glfwGetTime();
             currentTest->OnUpdate(window, currentTime - lastTime);
             lastTime = currentTime;
@@ -211,7 +215,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
         if (currentTest && key == GLFW_KEY_BACKSPACE)
         { // 删除物体
-//            std::cout << key << std::endl;
             currentTest->OnKeyAction(key, mods);
         }
     }

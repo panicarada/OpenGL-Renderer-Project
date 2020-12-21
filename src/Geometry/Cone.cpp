@@ -25,33 +25,28 @@ void Cone::updateSubdivision(int Steps)
     m_Steps = Steps;
 
     // 重新计算圆锥上的点，并放入buffer中
-    std::vector<Vertex> Vertices;
-    std::vector<unsigned int> Indices;
-
+    std::vector<Vertex> Vertices((m_Steps << 1) + 2);
     // 随机数
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
-    double Theta = 0;
-    double deltaTheta = M_PI * 2 / (m_Steps - 1);
     // 第一部分，放入点
-    for (int i = 0;i < m_Steps; ++i)
     {
-        float x = m_Scale.x * cos(Theta);
-        float y = 0.0f;
-        float z = m_Scale.z * sin(Theta);
+        #pragma omp parallel for num_thread(CORE_NUM)
+        for (int i = 0;i < m_Steps; ++i)
+        {
+            double Theta = M_PI * 2.0 * i / (m_Steps - 1);
+            float x = m_Scale.x * cos(Theta);
+            float y = 0.0f;
+            float z = m_Scale.z * sin(Theta);
 
-        // 对应于圆上的vertex
-        Vertices.push_back({glm::vec3(x, y, z), glm::vec3(0.0f, -1.0f, 0.0f),
-                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices[(i << 1) + 0] = {glm::vec3(x, y, z), glm::vec3(0.0f, -1.0f, 0.0f),
+                                      m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
 
-        // 对应于侧面的vertex
-        Vertices.push_back({glm::vec3(x, y, z), glm::vec3(x, 0.0f, z),
-                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
-        Theta += deltaTheta;
-
-        // 总结来说，2i是圆上的点，2i+1是侧面的点
+            Vertices[(i << 1) + 1] = {glm::vec3(x, y, z), glm::vec3(x, 0.0f, z),
+                                      m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+        }
     }
     // 圆锥顶点
     int Center2 = Vertices.size();
@@ -64,38 +59,35 @@ void Cone::updateSubdivision(int Steps)
 
     // 第二部分，放入indices
 
+    std::vector<unsigned int> Indices(6 * m_Steps);
     // 圆
-    for (int i = 0;i < 2 * m_Steps; i += 2)
     {
-        if (i < 2*m_Steps-2)
+        #pragma omp parallel num_thread(CORE_NUM)
+        for (int i = 0;i < m_Steps-1; ++i)
         {
-            Indices.push_back(i);
-            Indices.push_back(Center1);
-            Indices.push_back(i+2);
+            Indices[3*i + 0] = (i << 1);
+            Indices[3*i + 1] = Center1;
+            Indices[3*i + 2] = (i << 1) + 2;
         }
-        else
-        {
-            Indices.push_back(i);
-            Indices.push_back(Center1);
-            Indices.push_back(0);
-        }
+        Indices[3*m_Steps - 3] = (m_Steps - 1) << 1;
+        Indices[3*m_Steps - 2] = Center1;
+        Indices[3*m_Steps - 1] = 0;
     }
 
+    int Offset = 3 * m_Steps;
     // 侧面
-    for (int i = 1;i < 2 * m_Steps; i += 2)
     {
-        if (i < 2*m_Steps-3)
+        #pragma omp parallel num_thread(CORE_NUM)
+        for (int i = 0; i < m_Steps - 1; ++i)
         {
-            Indices.push_back(Center2);
-            Indices.push_back(i);
-            Indices.push_back(i+2);
+            Indices[Offset + 3*i + 0] = Center2;
+            Indices[Offset + 3*i + 1] = (i << 1) + 1;
+            Indices[Offset + 3*i + 2] = (i << 1) + 3;
         }
-        else
-        {
-            Indices.push_back(Center2);
-            Indices.push_back(i);
-            Indices.push_back(1);
-        }
+
+        Indices[Offset + 3*m_Steps - 3] = Center2;
+        Indices[Offset + 3*m_Steps - 2] = ((m_Steps - 1) << 1) + 1;
+        Indices[Offset + 3*m_Steps - 1] = 1;
     }
 
     // 重新分配空间
@@ -110,33 +102,29 @@ void Cone::updateSubdivision(int Steps)
 void Cone::updateDrawData()
 {
     // 重新计算圆锥上的点，并放入buffer中
-    std::vector<Vertex> Vertices;
-    std::vector<unsigned int> Indices;
+    std::vector<Vertex> Vertices((m_Steps << 1) + 2);
 
     // 随机数
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
 
-    double Theta = 0;
-    double deltaTheta = M_PI * 2 / (m_Steps-1);
     // 第一部分，放入点
-    for (int i = 0;i < m_Steps; ++i)
     {
-        float x = m_Scale.x * cos(Theta);
-        float y = 0.0f;
-        float z = m_Scale.z * sin(Theta);
+        #pragma omp parallel for num_thread(CORE_NUM)
+        for (int i = 0;i < m_Steps; ++i)
+        {
+            double Theta = M_PI * 2.0 * i / (m_Steps - 1);
+            float x = m_Scale.x * cos(Theta);
+            float y = 0.0f;
+            float z = m_Scale.z * sin(Theta);
 
-        // 对应于圆上的vertex
-        Vertices.push_back({glm::vec3(x, y, z), glm::vec3(0.0f, -1.0f, 0.0f),
-                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+            Vertices[(i << 1) + 0] = {glm::vec3(x, y, z), glm::vec3(0.0f, -1.0f, 0.0f),
+                                      m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
 
-        // 对应于侧面的vertex
-        Vertices.push_back({glm::vec3(x, y, z), glm::vec3(x, 0.0f, z),
-                            m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
-        Theta += deltaTheta;
-
-        // 总结来说，2i是圆上的点，2i+1是侧面的点
+            Vertices[(i << 1) + 1] = {glm::vec3(x, y, z), glm::vec3(x, 0.0f, z),
+                                      m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+        }
     }
     // 圆锥顶点
     int Center2 = Vertices.size();
@@ -149,38 +137,35 @@ void Cone::updateDrawData()
 
     // 第二部分，放入indices
 
+    std::vector<unsigned int> Indices(6 * m_Steps);
     // 圆
-    for (int i = 0;i < 2 * m_Steps; i += 2)
     {
-        if (i < 2*m_Steps-2)
+        #pragma omp parallel num_thread(CORE_NUM)
+        for (int i = 0;i < m_Steps-1; ++i)
         {
-            Indices.push_back(i);
-            Indices.push_back(Center1);
-            Indices.push_back(i+2);
+            Indices[3*i + 0] = (i << 1);
+            Indices[3*i + 1] = Center1;
+            Indices[3*i + 2] = (i << 1) + 2;
         }
-        else
-        {
-            Indices.push_back(i);
-            Indices.push_back(Center1);
-            Indices.push_back(0);
-        }
+        Indices[3*m_Steps - 3] = (m_Steps - 1) << 1;
+        Indices[3*m_Steps - 2] = Center1;
+        Indices[3*m_Steps - 1] = 0;
     }
 
+    int Offset = 3 * m_Steps;
     // 侧面
-    for (int i = 1;i < 2 * m_Steps; i += 2)
     {
-        if (i < 2*m_Steps-2)
+        #pragma omp parallel num_thread(CORE_NUM)
+        for (int i = 0; i < m_Steps - 1; ++i)
         {
-            Indices.push_back(Center2);
-            Indices.push_back(i);
-            Indices.push_back(i+2);
+            Indices[Offset + 3*i + 0] = Center2;
+            Indices[Offset + 3*i + 1] = (i << 1) + 1;
+            Indices[Offset + 3*i + 2] = (i << 1) + 3;
         }
-        else
-        {
-            Indices.push_back(Center2);
-            Indices.push_back(i);
-            Indices.push_back(1);
-        }
+
+        Indices[Offset + 3*m_Steps - 3] = Center2;
+        Indices[Offset + 3*m_Steps - 2] = ((m_Steps - 1) << 1) + 1;
+        Indices[Offset + 3*m_Steps - 1] = 1;
     }
 
     // 重新分配空间

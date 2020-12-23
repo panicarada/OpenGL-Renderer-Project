@@ -12,7 +12,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/matrix_operation.hpp" // 主要用的是构造对角阵
 #include <omp.h> // Open MP
-
+#include <functional>
 
 
 

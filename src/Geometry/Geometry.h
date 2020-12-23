@@ -23,8 +23,12 @@
 
 class Geometry
 {
-
 public:
+    inline void detachTexture(const std::shared_ptr<TextureArray>& TA)
+    { // 取消纹理的绑定
+        TA->eraseTexture(m_TextureSlot);
+        m_TextureSlot = -1;
+    }
     inline void draw() const
     {
         Renderer renderer;
@@ -39,8 +43,7 @@ public:
         m_Shader->setUniform4f("u_Material.Diffuse", m_Material.Diffuse);
         m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
         m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
-
-        if (m_TextureSlot > 0)
+        if (m_TextureSlot >= 0)
         { // 如果有纹理，就设置纹理
             m_Shader->setUniform1i("u_TexIndex", m_TextureSlot);
         }
@@ -82,7 +85,6 @@ public:
         m_Layout = std::make_unique<VertexBufferLayout>();
         updateRotation();
     }
-
     virtual std::string getClassName() = 0; // 返回几何物体名字
 protected:
     /* 渲染要用的数据结构 */
@@ -101,7 +103,6 @@ public:
 
     Material m_Material; // 材质
     glm::vec4 m_Color; // 颜色
-//    std::shared_ptr<TextureArray> m_Texture; // 纹理
     int m_TextureSlot; // 纹理
 
     /* 几何参数 */

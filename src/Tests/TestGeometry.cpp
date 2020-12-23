@@ -257,10 +257,6 @@ test::TestGeometry::TestGeometry()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
-//    glDepthMask(GL_FALSE);
-
-
-
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
@@ -316,14 +312,17 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
     {
         if (selectedGeometry)
         { // 尝试更换纹理
-            // 检查文件是否存在
-            if (std::ifstream("../resource/Textures/" + m_TextureName + ".png"))
-            {
+            if (m_TextureName == ".detach")
+            { // 删除材质
+                selectedGeometry->detachTexture(m_TextureArray);
+            }
+            else if (std::ifstream("../resource/Textures/" + m_TextureName + ".png"))
+            { // 检查文件是否存在
                 if (selectedGeometry->m_TextureSlot > 0)
                 {
                     m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
                 }
-                selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName + ".png");
+                std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName + ".png")) << std::endl;
             }
             else
             {

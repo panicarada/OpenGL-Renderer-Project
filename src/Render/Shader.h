@@ -43,6 +43,10 @@ public:
         DebugCall(glUniform1fv(getUniformLocation(Name), Value.size(), &Value[0]));
     }
     void setUniform3f(const std::string Name, float v0, float v1, float v2);
+    void setUniform3f(const std::string Name, const glm::vec3& v)
+    {
+        setUniform3f(Name, v[0], v[1], v[2]);
+    }
     inline void setUniform3fv(const std::string Name, const std::vector<glm::vec3> &Value)
     {
         DebugCall(glUniform3fv(getUniformLocation(Name), Value.size(), &Value[0][0]));

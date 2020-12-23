@@ -46,30 +46,51 @@ struct Material
 };
 uniform Material u_Material;
 
+struct Light
+{
+	int isOpen; // 是否开启，1表示开启，0表示关闭
+	vec3 Position; // 光源位置
+	vec4 Color; // 光源颜色
+	float Brightness; // 光源亮度
+	vec3 Attenuation; // 光源的衰减系数
+};
+const int MAX_LIGHT_NUM = 10; // 最大光源数目
+uniform Light u_Lights[MAX_LIGHT_NUM]; // 光源集合
+// uniform int u_LightsNum; // 光源数目
 
-uniform int u_LightNum; // 光源数目
-uniform vec3 u_LightPositions[6]; // 光源位置
-uniform vec4 u_LightColor[6]; // 光源颜色
-uniform float u_LightBrightness[6]; // 光源亮度
 
 uniform vec4 u_Ambient; // 环境光
 uniform vec3 u_CameraPosition; // 相机位置
 
 uniform int u_TexIndex; // 使用的纹理下标
-uniform sampler2D u_Textures[15]; // 纹理数组
+uniform sampler2DArray u_Textures; // 纹理数组
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
 void main()
 {
 	vec3 Norm = normalize(v_Normal);
 	vec4 Diffuse = vec4(0.0f);
-	vec3 LightDirection[6];
+	vec3 LightDirection[MAX_LIGHT_NUM];
+	// 考虑光的衰减
+	float LightAttenuation[MAX_LIGHT_NUM];
 
-	for (int i = 0;i < u_LightNum; ++i)
+
+	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
-		LightDirection[i] = normalize(u_LightPositions[i] - FragPosition);
-		float Diff = max(dot(Norm, LightDirection[i]), 0.0f);
-		Diffuse += Diff * u_LightColor[i] * u_LightBrightness[i];
+		if (u_Lights[i].isOpen != 0)
+		{
+			vec3 tempVec = u_Lights[i].Position - FragPosition; // 光源到fragment的向量
+			LightDirection[i] = normalize(tempVec);
+			float distance = length(tempVec);
+
+			// 衰减因子
+			LightAttenuation[i] = 1.0 / (u_Lights[i].Attenuation[0] + 
+										 u_Lights[i].Attenuation[1] * distance +
+										 u_Lights[i].Attenuation[2] * distance * distance);
+
+			float Diff = max(dot(Norm, LightDirection[i]), 0.0f);
+			Diffuse += Diff * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
+		}
 	}
 
 
@@ -78,18 +99,21 @@ void main()
 	vec4 Specular = vec4(0.0f);
 	vec3 ViewDirection = normalize(u_CameraPosition - FragPosition);
 
-	for (int i = 0;i < u_LightNum; ++i)
+	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
-		vec3 ReflectDir = reflect(-LightDirection[i], Norm);
-		float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);
-		Specular += SpecularStrength * Spec * u_LightColor[i] * u_LightBrightness[i];
+		if (u_Lights[i].isOpen != 0)
+		{
+			vec3 ReflectDir = reflect(-LightDirection[i], Norm);
+			float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);
+			Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
+		}
 	}
 
 	vec4 Color = v_Color;
 	// 如果有纹理
 	if (u_TexIndex >= 0 && u_TexIndex < 15)
 	{
-		Color = texture(u_Textures[u_TexIndex], v_TexCoord);
+		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
 	}
 	FragColor = (0.5 * u_Ambient * u_Material.Ambient + 1.0 * u_Material.Diffuse * Diffuse + 1.0 * u_Material.Specular * Specular) * Color; 
 }

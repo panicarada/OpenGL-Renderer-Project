@@ -89,8 +89,7 @@ void test::TestGeometry::OnImGuiRender()
         // 保证创建光源总在相机后面
         light->m_Position = m_Camera->getPosition() - 2.0f * m_Camera->getDirection();
         selectedLight = light; // 总是保证新加的光源是先被选中的
-
-        Light::updateData(m_Shader, m_LightSet);
+        selectedLight->updateData();
     }
 
     /* 光源的集合 */
@@ -120,15 +119,15 @@ void test::TestGeometry::OnImGuiRender()
     {
         if (ImGui::ColorEdit4("Light Color", &selectedLight->m_Color[0]))
         {
-            Light::updateData(m_Shader, m_LightSet);
+            selectedLight->updateData();
         }
         if (ImGui::SliderFloat3("Light Position", &selectedLight->m_Position.x, -10.0f, 10.0f))
         {
-            Light::updateData(m_Shader, m_LightSet);
+            selectedLight->updateData();
         }
-        if (ImGui::SliderFloat("Light Brightness", &selectedLight->Brightness, 0.5f, 5.0f))
+        if (ImGui::SliderFloat("Light Brightness", &selectedLight->m_Brightness, 0.5f, 5.0f))
         {
-            Light::updateData(m_Shader, m_LightSet);
+            selectedLight->updateData();
         }
     }
 
@@ -276,10 +275,10 @@ test::TestGeometry::TestGeometry()
     Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
 
     // 光源
-//    auto LightPosition = m_Camera->getPosition() - 10.0f * m_Camera->getDirection() + glm::vec3(-2.0f, 5.0f, 0.0f);
-//    m_Shader->setUniform3f("u_LightPosition", LightPosition.x, LightPosition.y, LightPosition.z);
-//    m_Shader->setUniform4f("u_LightColor", 1.0f, 1.0f, 1.0f, 1.0f);
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
+
+    // 纹理数组
+    m_TextureArray = std::make_shared<TextureArray>(m_Shader);
 }
 
 void test::TestGeometry::OnKeyAction(int key, int mods)
@@ -297,21 +296,20 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
                     selectedLight = *m_LightSet.begin();
                 }
                 else selectedLight = nullptr;
-                Light::updateData(m_Shader, m_LightSet);
             }
         }
         else
         {
             std::cout << "deleting object" << std::endl;
-//            if (selectedGeometry)
-//            {
-//                m_GeometrySet.erase(selectedGeometry);
-//                if (!m_GeometrySet.empty())
-//                {
-//                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
-//                }
-//                else selectedGeometry = nullptr;
-//            }
+            if (selectedGeometry)
+            {
+                m_GeometrySet.erase(selectedGeometry);
+                if (!m_GeometrySet.empty())
+                {
+                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
+                }
+                else selectedGeometry = nullptr;
+            }
         }
     }
     else if (key == GLFW_KEY_ENTER)
@@ -321,7 +319,11 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
             // 检查文件是否存在
             if (std::ifstream("../resource/Textures/" + m_TextureName + ".png"))
             {
-                selectedGeometry->m_Texture = std::make_shared<Texture>(m_Shader,  "../resource/Textures/" + m_TextureName + ".png");
+                if (selectedGeometry->m_TextureSlot > 0)
+                {
+                    m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
+                }
+                selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName + ".png");
             }
             else
             {

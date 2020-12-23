@@ -10,7 +10,7 @@
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
-#include "Texture.h"
+#include "TextureArray.h"
 #include "VertexBufferLayout.h"
 
 // 四元数所用库
@@ -40,20 +40,16 @@ public:
         m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
         m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
 
-        if (m_Texture)
-        { // 如果有材质，就设置材质
-            m_Shader->setUniform1i("u_TexIndex", m_Texture->getSlotID());
-            m_Texture->bind();
+        if (m_TextureSlot > 0)
+        { // 如果有纹理，就设置纹理
+            m_Shader->setUniform1i("u_TexIndex", m_TextureSlot);
         }
         else
-        { // 负数下标表示没有材质
+        { // 负数下标表示没有纹理
             m_Shader->setUniform1i("u_TexIndex", -1);
         }
+
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
-        if (m_Texture)
-        {
-            m_Texture->unbind();
-        }
     }
     // 根据旋转角度重建旋转矩阵
     inline void updateRotation()
@@ -71,12 +67,6 @@ public:
     inline const glm::mat4 getModelMatrix() const
     {
         auto ScaleMat = glm::diagonal4x4(glm::vec4(m_Scale.x, m_Scale.y, m_Scale.z, 1.0f));
-//        auto ScaleMat = glm::mat4(1.0f);
-//        ScaleMat[0][0] = m_Scale.x;
-//        ScaleMat[1][1] = m_Scale.y;
-//        ScaleMat[2][2] = m_Scale.z;
-
-
         auto TransMat = glm::translate(glm::mat4(1.0f), (m_Position));
 
         return TransMat * m_RotateMatrix * ScaleMat;
@@ -86,6 +76,7 @@ public:
              const Rotation& rotation = {0.0f, 0.0f, 0.0f},
              const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f})
      : m_Camera(Camera), m_Shader(Shader), m_Position(Position), m_Rotation(rotation), m_Scale(Scale), m_Material(material), m_Color(0.48f, 0.75f, 0.81f, 1.0f)
+     , m_TextureSlot(-1)
     {
         m_VAO = std::make_unique<VertexArray>();
         m_Layout = std::make_unique<VertexBufferLayout>();
@@ -110,7 +101,8 @@ public:
 
     Material m_Material; // 材质
     glm::vec4 m_Color; // 颜色
-    std::shared_ptr<Texture> m_Texture; // 纹理
+//    std::shared_ptr<TextureArray> m_Texture; // 纹理
+    int m_TextureSlot; // 纹理
 
     /* 几何参数 */
     // 三个方向的拉伸，相对于几何物体的坐标

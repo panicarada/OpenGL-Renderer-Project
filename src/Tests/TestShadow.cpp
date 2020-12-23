@@ -85,14 +85,14 @@ void test::TestShadow::OnImGuiRender()
     {
         std::set<std::shared_ptr<Light>> temp;
         temp.insert(m_Light);
-        Light::updateData(m_Shader, temp);
+        m_Light->updateData();
         m_Shadow->updateShadowData();
     }
     if (ImGui::SliderFloat3("Light Position", &m_Light->m_Position.x, -10.0f, 10.0f))
     {
         std::set<std::shared_ptr<Light>> temp;
         temp.insert(m_Light);
-        Light::updateData(m_Shader, temp);
+        m_Light->updateData();
         m_Shadow->updateShadowData();
     }
 

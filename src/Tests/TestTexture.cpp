@@ -54,11 +54,11 @@ test::TestTexture::TestTexture()
     m_Shader = std::make_shared<Shader>("../resource/TestTexture.shader");
     m_Shader->bind();
 
-    TextureSet.push_back(std::make_shared<Texture>(m_Shader, "../resource/Textures/oriental-tiles.png"));
-    TextureSet.push_back(std::make_shared<Texture>(m_Shader, "../resource/Textures/moroccan-flower-dark.png"));
-    TextureSet.push_back(std::make_shared<Texture>(m_Shader, "../resource/Textures/moroccan-flower.png"));
-    TextureSet.push_back(std::make_shared<Texture>(m_Shader, "../resource/Textures/watercolor.png"));
-    TextureSet.push_back(std::make_shared<Texture>(m_Shader, "../resource/Textures/double-bubble.png"));
+//    TextureSet.push_back(std::make_shared<TextureArray>(m_Shader, "../resource/Textures/oriental-tiles.png"));
+//    TextureSet.push_back(std::make_shared<TextureArray>(m_Shader, "../resource/Textures/moroccan-flower-dark.png"));
+//    TextureSet.push_back(std::make_shared<TextureArray>(m_Shader, "../resource/Textures/moroccan-flower.png"));
+//    TextureSet.push_back(std::make_shared<TextureArray>(m_Shader, "../resource/Textures/watercolor.png"));
+//    TextureSet.push_back(std::make_shared<TextureArray>(m_Shader, "../resource/Textures/double-bubble.png"));
 }
 
 void test::TestTexture::OnRender()
@@ -67,7 +67,7 @@ void test::TestTexture::OnRender()
     DebugCall(glClear(GL_COLOR_BUFFER_BIT));
 
     Renderer renderer;
-    std::shared_ptr<Texture> texture;
+    std::shared_ptr<TextureArray> texture;
     static int count = 0;
     if (count & 0b1000000)
     {
@@ -101,7 +101,7 @@ void test::TestTexture::OnRender()
     if (texture)
     {
         texture->bind();
-        m_Shader->setUniform1i("u_TexIndex", texture->getSlotID());
+//        m_Shader->setUniform1i("u_TexIndex", texture->getSlotID());
     }
     m_Shader->bind();
     renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);

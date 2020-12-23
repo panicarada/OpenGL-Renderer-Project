@@ -5,7 +5,7 @@
 #pragma once
 
 #include "Test.h"
-#include "Texture.h"
+#include "TextureArray.h"
 #include "Light.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
@@ -30,7 +30,7 @@ namespace test
             return m_Camera;
         }
     private:
-        std::vector<std::shared_ptr<Texture>> TextureSet;
+        std::vector<std::shared_ptr<TextureArray>> TextureSet;
         std::shared_ptr<VertexArray> m_VAO;
         std::shared_ptr<IndexBuffer> m_IndexBuffer;
         std::shared_ptr<VertexBuffer> m_VertexBuffer;

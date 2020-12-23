@@ -34,12 +34,13 @@ namespace test
         std::shared_ptr<Light> selectedLight;
         std::shared_ptr<Shader> m_Shader;
         std::shared_ptr<Camera> m_Camera;
+        std::shared_ptr<TextureArray> m_TextureArray;
+
         glm::vec4 m_Color;
         glm::vec3 m_Position;
         int m_Steps;
         int m_HorizontalSteps;
         int m_VerticalSteps;
-
 
         std::string m_TextureName; // 用户输入的纹理名称，只有当按下回车后才会被应用
     };

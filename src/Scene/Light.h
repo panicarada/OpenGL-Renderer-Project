@@ -11,7 +11,7 @@ class Light
 {
 public:
     Light(std::shared_ptr<Shader> shader, int ID = -1, glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec4 Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), float Intensity = 1.0f)
-        : m_Shader(shader), m_Position(Position), m_Color(Color), m_Intensity(Intensity), m_Brightness(1.0f), m_Attenuation(glm::vec3(1.0f, 0.14f, 0.17f))
+        : m_Shader(shader), m_Position(Position), m_Color(Color), m_Intensity(Intensity), m_Brightness(1.0f), m_Attenuation(glm::vec3(1.0f, 0.14f, 0.05f))
     {
         m_ID = *availableSlots.begin(); // 任意获取一个可用的下标
         std::cout << "Light ID: " << m_ID << std::endl;

@@ -316,13 +316,13 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
             { // 删除材质
                 selectedGeometry->detachTexture(m_TextureArray);
             }
-            else if (std::ifstream("../resource/Textures/" + m_TextureName + ".png"))
+            else if (std::ifstream("../resource/Textures/" + m_TextureName))
             { // 检查文件是否存在
                 if (selectedGeometry->m_TextureSlot > 0)
                 {
                     m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
                 }
-                std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName + ".png")) << std::endl;
+                std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName)) << std::endl;
             }
             else
             {

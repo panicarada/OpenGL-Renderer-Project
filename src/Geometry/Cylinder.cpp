@@ -15,6 +15,8 @@ Cylinder::Cylinder(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
+    m_Layout->Push<float>(2); // 纹理坐标
+
 
     updateSubdivision(30);
 }
@@ -49,37 +51,44 @@ void Cylinder::updateSubdivision(int Steps)
 
             // 侧面法向量（法向量推导见报告）
             glm::vec3 SideNormal = glm::cross(glm::vec3(lowerX - upperX, -1.0f, lowerZ - upperZ),
-                                               glm::vec3(lowerZ, 0.0f, -lowerX));
+                                              glm::vec3(lowerZ, 0.0f, -lowerX));
             // 上半部分对应于圆的vertex
             Vertices[(i<<2) + 0].Position = glm::vec3(upperX, upperY, upperZ);
             Vertices[(i<<2) + 0].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
             Vertices[(i<<2) + 0].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+            Vertices[(i<<2) + 0].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 1.0f);
 
             // 上半部分对应于侧面的vertex
             Vertices[(i<<2) + 1].Position = glm::vec3(upperX, upperY, upperZ);
             Vertices[(i<<2) + 1].Normal =  SideNormal;
             Vertices[(i<<2) + 1].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+            Vertices[(i<<2) + 1].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 1.0f);
 
             // 下半部分对应于圆的vertex
             Vertices[(i<<2) + 2].Position = glm::vec3(lowerX, 0.0f, lowerZ);
             Vertices[(i<<2) + 2].Normal = glm::vec3(0.0f, -1.0f, 0.0f);
             Vertices[(i<<2) + 2].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
-
+            Vertices[(i<<2) + 2].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 0.0f);
 
             // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
             Vertices[(i<<2) + 3].Position = glm::vec3(lowerX, 0.0f, lowerZ);
             Vertices[(i<<2) + 3].Normal = SideNormal;
             Vertices[(i<<2) + 3].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
-
+            Vertices[(i<<2) + 3].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 0.0f);
             /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
         }
     }
     // 两个圆心
     int Center1 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f),
+                        m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+                        glm::vec2(1.0f, 0.0f)});
     int Center2 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
-
+    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f),
+                        glm::vec3(0.0f, -1.0f, 0.0f),
+                        m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+                        glm::vec2(1.0f, 1.0f)});
 
     std::vector<unsigned int> Indices(6*m_Steps * 2);
     // 第二部分，放入index
@@ -171,31 +180,39 @@ void Cylinder::updateDrawData()
             Vertices[(i<<2) + 0].Position = glm::vec3(upperX, upperY, upperZ);
             Vertices[(i<<2) + 0].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
             Vertices[(i<<2) + 0].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+            Vertices[(i<<2) + 0].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 1.0f);
 
             // 上半部分对应于侧面的vertex
             Vertices[(i<<2) + 1].Position = glm::vec3(upperX, upperY, upperZ);
             Vertices[(i<<2) + 1].Normal =  SideNormal;
             Vertices[(i<<2) + 1].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+            Vertices[(i<<2) + 1].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 1.0f);
 
             // 下半部分对应于圆的vertex
             Vertices[(i<<2) + 2].Position = glm::vec3(lowerX, 0.0f, lowerZ);
             Vertices[(i<<2) + 2].Normal = glm::vec3(0.0f, -1.0f, 0.0f);
             Vertices[(i<<2) + 2].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
-
+            Vertices[(i<<2) + 2].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 0.0f);
 
             // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
             Vertices[(i<<2) + 3].Position = glm::vec3(lowerX, 0.0f, lowerZ);
             Vertices[(i<<2) + 3].Normal = SideNormal;
             Vertices[(i<<2) + 3].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
-
+            Vertices[(i<<2) + 3].TexCoord = glm::vec2(1.0 * i / (m_Steps - 1), 0.0f);
             /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
         }
     }
     // 两个圆心
     int Center1 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f),
+                        m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+                        glm::vec2(0.5f, 0.5f)});
     int Center2 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f),
+                        glm::vec3(0.0f, -1.0f, 0.0f),
+                        m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+                        glm::vec2(0.5f, 0.5f)});
 
 
     std::vector<unsigned int> Indices(6*m_Steps * 2);

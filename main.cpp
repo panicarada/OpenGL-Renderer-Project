@@ -17,6 +17,7 @@
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回调函数
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods); // 键盘回调（指定Action后，长按只会响应一次）函数
+void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY);
 
 std::shared_ptr<Camera> camera = nullptr;
 test::Test* currentTest = nullptr;
@@ -148,6 +149,8 @@ int main()
     glfwSetCursorPosCallback(window, MouseCallback);
     // 注册键盘回调函数
     glfwSetKeyCallback(window, KeyCallback);
+    // 注册触摸板回调函数
+    glfwSetScrollCallback(window, ScrollCallback);
 
     while( !glfwWindowShouldClose(window) )
     {
@@ -228,4 +231,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             currentTest->OnKeyAction(key, mods);
         }
     }
+}
+
+void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY)
+{
+    // TODO: 摄像机的Zooming
+    std::cout << "Scrolling! (" <<  deltaX << " , " << deltaY << ")" << std::endl;
 }

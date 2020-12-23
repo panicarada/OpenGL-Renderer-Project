@@ -41,34 +41,44 @@ void Cylinder::updateSubdivision(int Steps)
         for (int i = 0;i < m_Steps; ++i)
         {
             double Theta = M_PI * 2.0 * i / (m_Steps - 1);
-            float upperX = m_Scale.w * m_Scale.z * cos(Theta);
-            float lowerX = m_Scale.x * m_Scale.z * cos(Theta);
-            float y = m_Scale.y;
-            float upperZ = m_Scale.w * m_Scale.z * sin(Theta);
-            float lowerZ = m_Scale.x * m_Scale.z * sin(Theta);
+            float upperX = m_Scale.w * cos(Theta);
+            float lowerX = cos(Theta);
+            float upperY = 1.0f;
+            float upperZ = m_Scale.w * sin(Theta);
+            float lowerZ = sin(Theta);
 
+            // 侧面法向量（法向量推导见报告）
+            glm::vec3 SideNormal = glm::cross(glm::vec3(lowerX - upperX, -1.0f, lowerZ - upperZ),
+                                               glm::vec3(lowerZ, 0.0f, -lowerX));
             // 上半部分对应于圆的vertex
-            Vertices[(i<<2) + 0] = {glm::vec3(upperX, y, upperZ), glm::vec3(0.0f, 1.0f, 0.0f),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
-            // 上半部分对应于侧面的vertex（法向量是(x, 0, z)）
-            Vertices[(i<<2) + 1] = {glm::vec3(upperX, y, upperZ), glm::vec3(upperX, 0.0f, upperZ),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 0].Position = glm::vec3(upperX, upperY, upperZ);
+            Vertices[(i<<2) + 0].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            Vertices[(i<<2) + 0].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+
+            // 上半部分对应于侧面的vertex
+            Vertices[(i<<2) + 1].Position = glm::vec3(upperX, upperY, upperZ);
+            Vertices[(i<<2) + 1].Normal =  SideNormal;
+            Vertices[(i<<2) + 1].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
 
             // 下半部分对应于圆的vertex
-            Vertices[(i<<2) + 2] = {glm::vec3(lowerX, -y, lowerZ), glm::vec3(0.0f, -1.0f, 0.0f),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 2].Position = glm::vec3(lowerX, 0.0f, lowerZ);
+            Vertices[(i<<2) + 2].Normal = glm::vec3(0.0f, -1.0f, 0.0f);
+            Vertices[(i<<2) + 2].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+
+
             // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
-            Vertices[(i<<2) + 3] = {glm::vec3(lowerX, -y, lowerZ), glm::vec3(lowerX, 0.0f, lowerZ),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 3].Position = glm::vec3(lowerX, 0.0f, lowerZ);
+            Vertices[(i<<2) + 3].Normal = SideNormal;
+            Vertices[(i<<2) + 3].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
 
             /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
         }
     }
     // 两个圆心
     int Center1 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, m_Scale.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
     int Center2 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, -m_Scale.y, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
 
 
     std::vector<unsigned int> Indices(6*m_Steps * 2);
@@ -148,34 +158,44 @@ void Cylinder::updateDrawData()
         for (int i = 0;i < m_Steps; ++i)
         {
             double Theta = M_PI * 2.0 * i / (m_Steps - 1);
-            float upperX = m_Scale.w * m_Scale.z * cos(Theta);
-            float lowerX = m_Scale.x * m_Scale.z * cos(Theta);
-            float y = m_Scale.y;
-            float upperZ = m_Scale.w * m_Scale.z * sin(Theta);
-            float lowerZ = m_Scale.x * m_Scale.z * sin(Theta);
+            float upperX = m_Scale.w * cos(Theta);
+            float lowerX = cos(Theta);
+            float upperY = 1.0f;
+            float upperZ = m_Scale.w * sin(Theta);
+            float lowerZ = sin(Theta);
 
+            // 侧面法向量（法向量推导见报告）
+            glm::vec3 SideNormal = glm::cross(glm::vec3(lowerX - upperX, -1.0f, lowerZ - upperZ),
+                                              glm::vec3(lowerZ, 0.0f, -lowerX));
             // 上半部分对应于圆的vertex
-            Vertices[(i<<2) + 0] = {glm::vec3(upperX, y, upperZ), glm::vec3(0.0f, 1.0f, 0.0f),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
-            // 上半部分对应于侧面的vertex（法向量是(x, 0, z)）
-            Vertices[(i<<2) + 1] = {glm::vec3(upperX, y, upperZ), glm::vec3(upperX, 0.0f, upperZ),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 0].Position = glm::vec3(upperX, upperY, upperZ);
+            Vertices[(i<<2) + 0].Normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            Vertices[(i<<2) + 0].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+
+            // 上半部分对应于侧面的vertex
+            Vertices[(i<<2) + 1].Position = glm::vec3(upperX, upperY, upperZ);
+            Vertices[(i<<2) + 1].Normal =  SideNormal;
+            Vertices[(i<<2) + 1].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
 
             // 下半部分对应于圆的vertex
-            Vertices[(i<<2) + 2] = {glm::vec3(lowerX, -y, lowerZ), glm::vec3(0.0f, -1.0f, 0.0f),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 2].Position = glm::vec3(lowerX, 0.0f, lowerZ);
+            Vertices[(i<<2) + 2].Normal = glm::vec3(0.0f, -1.0f, 0.0f);
+            Vertices[(i<<2) + 2].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
+
+
             // 下半部分对应于侧面的vertex（法向量是(x, 0, z)）
-            Vertices[(i<<2) + 3] = {glm::vec3(lowerX, -y, lowerZ), glm::vec3(lowerX, 0.0f, lowerZ),
-                                    m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)};
+            Vertices[(i<<2) + 3].Position = glm::vec3(lowerX, 0.0f, lowerZ);
+            Vertices[(i<<2) + 3].Normal = SideNormal;
+            Vertices[(i<<2) + 3].Color = m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f);
 
             /* 总结来说，2i的点是圆的点，2i+1的点是侧面的点，0 <= i < 2 * m_Steps */
         }
     }
     // 两个圆心
     int Center1 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, m_Scale.y, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
     int Center2 = Vertices.size();
-    Vertices.push_back({glm::vec3(0.0f, -m_Scale.y, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
+    Vertices.push_back({glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f), m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f)});
 
 
     std::vector<unsigned int> Indices(6*m_Steps * 2);

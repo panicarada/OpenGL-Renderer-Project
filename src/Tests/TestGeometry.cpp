@@ -6,7 +6,6 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Cylinder.h"
-#include "Cone.h"
 #include <unordered_map>
 
 void test::TestGeometry::OnUpdate(GLFWwindow *Window, float deltaTime)
@@ -54,11 +53,15 @@ void test::TestGeometry::OnImGuiRender()
     }
     if (ImGui::Button("add cone"))
     {
-        auto cone = std::make_shared<Cone>(m_Camera, m_Shader);
+        auto cone = std::make_shared<Cylinder>(m_Camera, m_Shader);
         m_GeometrySet.insert(cone);
         // 保证创建物体总在相机前面
         cone->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
         selectedGeometry = cone; // 总是保证新加的物体是先被选中的
+
+        selectedGeometry->Tag = "Cone"; // 备注一下它是圆锥
+        selectedGeometry->m_Scale.w = 0.0f; // 上端半径为0
+        selectedGeometry->updateDrawData();
     }
     if (ImGui::Button("add cylinder"))
     {
@@ -190,15 +193,6 @@ void test::TestGeometry::OnImGuiRender()
             cylinder->updateSubdivision(m_Steps);
         }
     }
-    if ((selectedGeometry->getClassName() == "Geometry::Cone"))
-    {
-        auto cone = std::dynamic_pointer_cast<Cone>(selectedGeometry);
-        m_Steps = cone->m_Steps;
-        if (ImGui::SliderInt("Subdivision", &m_Steps, 20, 300))
-        {
-            cone->updateSubdivision(m_Steps);
-        }
-    }
 
     if ((selectedGeometry->getClassName() == "Geometry::Sphere"))
     {
@@ -247,7 +241,7 @@ void test::TestGeometry::OnImGuiRender()
     }
     else
     {
-        if (ImGui::SliderFloat3("Scale", &selectedGeometry->m_Scale.x, 0.0f, 10.0f))
+        if (ImGui::SliderFloat3("Scale", &selectedGeometry->m_Scale.x, 0.05f, 10.0f))
         {
             selectedGeometry->updateDrawData();
         }
@@ -333,8 +327,6 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
             {
                 std::cout << "The file: '" << m_TextureName << "' is not available!" << std::endl;
             }
-
-
         }
 
     }

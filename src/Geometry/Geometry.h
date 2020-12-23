@@ -70,7 +70,16 @@ public:
 
     inline const glm::mat4 getModelMatrix() const
     {
-        return glm::translate(glm::mat4(1.0f), (m_Position)) * m_RotateMatrix;
+        auto ScaleMat = glm::diagonal4x4(glm::vec4(m_Scale.x, m_Scale.y, m_Scale.z, 1.0f));
+//        auto ScaleMat = glm::mat4(1.0f);
+//        ScaleMat[0][0] = m_Scale.x;
+//        ScaleMat[1][1] = m_Scale.y;
+//        ScaleMat[2][2] = m_Scale.z;
+
+
+        auto TransMat = glm::translate(glm::mat4(1.0f), (m_Position));
+
+        return TransMat * m_RotateMatrix * ScaleMat;
     }
     explicit Geometry(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader>& Shader, const glm::vec3 &Position = glm::vec3(0.0f, 0.0f, 0.0f),
              const Material& material = {glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), 1.0f},

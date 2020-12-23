@@ -6,7 +6,7 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Cylinder.h"
-#include "Cone.h"
+//#include "Cone.h"
 #include <unordered_map>
 
 void test::TestDepth::OnUpdate(GLFWwindow *Window, float deltaTime)

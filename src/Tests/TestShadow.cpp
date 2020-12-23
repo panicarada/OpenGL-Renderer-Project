@@ -6,7 +6,6 @@
 #include "Sphere.h"
 #include "Cube.h"
 #include "Cylinder.h"
-#include "Cone.h"
 #include <set>
 #include <unordered_map>
 
@@ -53,6 +52,7 @@ void test::TestShadow::OnImGuiRender()
         cube->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
         selectedGeometry = cube; // 总是保证新加的物体是先被选中的
     }
+    /*
     if (ImGui::Button("add cone"))
     {
         auto cone = std::make_shared<Cone>(m_Camera, m_Shader);
@@ -60,7 +60,7 @@ void test::TestShadow::OnImGuiRender()
         // 保证创建物体总在相机前面
         cone->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
         selectedGeometry = cone; // 总是保证新加的物体是先被选中的
-    }
+    }*/
     if (ImGui::Button("add cylinder"))
     {
         auto cylinder = std::make_shared<Cylinder>(m_Camera, m_Shader);
@@ -156,15 +156,6 @@ void test::TestShadow::OnImGuiRender()
         if (ImGui::SliderInt("Subdivision", &m_Steps, minSteps, maxSteps))
         {
             cylinder->updateSubdivision(m_Steps);
-        }
-    }
-    if ((selectedGeometry->getClassName() == "Geometry::Cone"))
-    {
-        auto cone = std::dynamic_pointer_cast<Cone>(selectedGeometry);
-        m_Steps = cone->m_Steps;
-        if (ImGui::SliderInt("Subdivision", &m_Steps, 20, 1000))
-        {
-            cone->updateSubdivision(m_Steps);
         }
     }
 

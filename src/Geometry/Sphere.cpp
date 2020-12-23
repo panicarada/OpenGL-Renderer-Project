@@ -47,16 +47,16 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
                 double sinPhi = sin(Phi);
                 double cosPhi = cos(Phi);
 
-                glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
-                                               m_Scale.z * sin(Theta) * sinPhi);
+                glm::vec3 Position = glm::vec3(cos(Theta) * sinPhi, cosPhi,sin(Theta) * sinPhi);
 
                 double rand1 = distribution(generator);
                 double rand2 = distribution(generator);
                 double rand3 = distribution(generator);
 
-                Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
-                                                     m_Color + glm::vec4(rand1, rand2, rand3, 0.0f),
-                                                     glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1))};
+                Vertices[i * m_HorizontalSteps + j].Position = Position;
+                Vertices[i * m_HorizontalSteps + j].Normal = Position;
+                Vertices[i * m_HorizontalSteps + j].Color = m_Color + glm::vec4(rand1, rand2, rand3, 0.0f);
+                Vertices[i * m_HorizontalSteps + j].TexCoord = glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1));
 
                 // Indices
                 if (i < m_VerticalSteps - 1)
@@ -107,16 +107,16 @@ void Sphere::updateDrawData()
                 double sinPhi = sin(Phi);
                 double cosPhi = cos(Phi);
 
-                glm::vec3 Position = glm::vec3(m_Scale.x * cos(Theta) * sinPhi, -m_Scale.y * cosPhi,
-                                               m_Scale.z * sin(Theta) * sinPhi);
+                glm::vec3 Position = glm::vec3(cos(Theta) * sinPhi, cosPhi,sin(Theta) * sinPhi);
 
                 double rand1 = distribution(generator);
                 double rand2 = distribution(generator);
                 double rand3 = distribution(generator);
 
-                Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
-                                                       m_Color + glm::vec4(rand1, rand2, rand3, 0.0f),
-                                                       glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1))}; // 点坐标
+                Vertices[i * m_HorizontalSteps + j].Position = Position;
+                Vertices[i * m_HorizontalSteps + j].Normal = Position;
+                Vertices[i * m_HorizontalSteps + j].Color = m_Color + glm::vec4(rand1, rand2, rand3, 0.0f);
+                Vertices[i * m_HorizontalSteps + j].TexCoord = glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1));
 
                 // Indices
                 if (i < m_VerticalSteps - 1)

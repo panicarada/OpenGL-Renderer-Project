@@ -7,6 +7,7 @@
 
 #include "Tests/TestSphere.h"
 #include "Tests/TestBatchColor.h"
+#include "Tests/TestTexture.h"
 #include "Tests/TestCube.h"
 #include "Tests/TestCylinder.h"
 #include "Tests/TestGeometry.h"
@@ -24,6 +25,8 @@ test::Test* currentTest = nullptr;
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
+
+
 int main()
 {
     // 设置并行数目
@@ -112,7 +115,12 @@ int main()
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+
+    io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
+    io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
+
+//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     ImGui::StyleColorsDark();
@@ -123,6 +131,7 @@ int main()
     currentTest = testMenu;
 
     testMenu->RegisterTest<test::TestBatchColor>("Batch Color");
+    testMenu->RegisterTest<test::TestTexture>("Texture");
     testMenu->RegisterTest<test::TestSphere>("Sphere");
     testMenu->RegisterTest<test::TestCube>("Cube");
     testMenu->RegisterTest<test::TestCylinder>("Cylinder");
@@ -213,10 +222,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
         }
-        if (currentTest && key == GLFW_KEY_BACKSPACE)
-        { // 删除物体
+
+        if (currentTest)
+        {
             currentTest->OnKeyAction(key, mods);
         }
     }
-
 }

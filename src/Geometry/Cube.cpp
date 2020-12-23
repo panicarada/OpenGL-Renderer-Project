@@ -14,6 +14,7 @@ Cube::Cube(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader> 
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
+    m_Layout->Push<float>(2); // 纹理坐标
 
     struct temp
     { // 纯粹为了下面的Indices读起来方便而定义的

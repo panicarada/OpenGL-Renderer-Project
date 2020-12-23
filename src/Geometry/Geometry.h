@@ -10,6 +10,7 @@
 #include "VertexArray.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "Texture.h"
 #include "VertexBufferLayout.h"
 
 // 四元数所用库
@@ -39,8 +40,20 @@ public:
         m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
         m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
 
-
+        if (m_Texture)
+        { // 如果有材质，就设置材质
+            m_Shader->setUniform1i("u_TexIndex", m_Texture->getSlotID());
+            m_Texture->bind();
+        }
+        else
+        { // 负数下标表示没有材质
+            m_Shader->setUniform1i("u_TexIndex", -1);
+        }
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
+        if (m_Texture)
+        {
+            m_Texture->unbind();
+        }
     }
     // 根据旋转角度重建旋转矩阵
     inline void updateRotation()
@@ -88,6 +101,7 @@ public:
 
     Material m_Material; // 材质
     glm::vec4 m_Color; // 颜色
+    std::shared_ptr<Texture> m_Texture; // 纹理
 
     /* 几何参数 */
     // 三个方向的拉伸，相对于几何物体的坐标

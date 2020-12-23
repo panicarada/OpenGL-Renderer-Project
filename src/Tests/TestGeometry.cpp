@@ -252,6 +252,11 @@ void test::TestGeometry::OnImGuiRender()
             selectedGeometry->updateDrawData();
         }
     }
+
+    if (ImGui::InputText("Texture Selection", &m_TextureName, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        std::cout << "Hello" << std::endl;
+    }
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
@@ -304,15 +309,33 @@ void test::TestGeometry::OnKeyAction(int key, int mods)
         else
         {
             std::cout << "deleting object" << std::endl;
-            if (selectedGeometry)
-            {
-                m_GeometrySet.erase(selectedGeometry);
-                if (!m_GeometrySet.empty())
-                {
-                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
-                }
-                else selectedGeometry = nullptr;
-            }
+//            if (selectedGeometry)
+//            {
+//                m_GeometrySet.erase(selectedGeometry);
+//                if (!m_GeometrySet.empty())
+//                {
+//                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体
+//                }
+//                else selectedGeometry = nullptr;
+//            }
         }
+    }
+    else if (key == GLFW_KEY_ENTER)
+    {
+        if (selectedGeometry)
+        { // 尝试更换纹理
+            // 检查文件是否存在
+            if (std::ifstream("../resource/Textures/" + m_TextureName + ".png"))
+            {
+                selectedGeometry->m_Texture = std::make_shared<Texture>(m_Shader,  "../resource/Textures/" + m_TextureName + ".png");
+            }
+            else
+            {
+                std::cout << "The file: '" << m_TextureName << "' is not available!" << std::endl;
+            }
+
+
+        }
+
     }
 }

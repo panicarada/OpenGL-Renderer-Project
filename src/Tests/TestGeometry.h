@@ -32,7 +32,6 @@ namespace test
         std::shared_ptr<Geometry> Floor; // 地板
         std::set<std::shared_ptr<Light>> m_LightSet; // 光源
         std::shared_ptr<Light> selectedLight;
-
         std::shared_ptr<Shader> m_Shader;
         std::shared_ptr<Camera> m_Camera;
         glm::vec4 m_Color;
@@ -40,6 +39,9 @@ namespace test
         int m_Steps;
         int m_HorizontalSteps;
         int m_VerticalSteps;
+
+
+        std::string m_TextureName; // 用户输入的纹理名称，只有当按下回车后才会被应用
     };
 
 }

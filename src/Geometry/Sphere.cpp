@@ -14,6 +14,8 @@ Sphere::Sphere(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shad
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
+    m_Layout->Push<float>(2); // 纹理坐标
+
     updateSubdivision(50, 50);
 }
 
@@ -53,7 +55,8 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
                 double rand3 = distribution(generator);
 
                 Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
-                                                     m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)}; // 点坐标
+                                                     m_Color + glm::vec4(rand1, rand2, rand3, 0.0f),
+                                                     glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1))};
 
                 // Indices
                 if (i < m_VerticalSteps - 1)
@@ -112,7 +115,8 @@ void Sphere::updateDrawData()
                 double rand3 = distribution(generator);
 
                 Vertices[i * m_HorizontalSteps + j] = {Position, glm::normalize(Position),
-                                                       m_Color + glm::vec4(rand1, rand2, rand3, 0.0f)}; // 点坐标
+                                                       m_Color + glm::vec4(rand1, rand2, rand3, 0.0f),
+                                                       glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1))}; // 点坐标
 
                 // Indices
                 if (i < m_VerticalSteps - 1)

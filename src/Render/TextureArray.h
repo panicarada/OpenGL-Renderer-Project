@@ -14,7 +14,7 @@ class TextureArray
 {
 private:
     unsigned int m_RendererID;
-    static std::set<unsigned int> availableSlots; // 所有材质公共可用的slot编号池
+    std::set<unsigned int> availableSlots; // 所有材质公共可用的slot编号池
     std::shared_ptr<Shader> m_Shader;
 
     // 一个TextureArray所有的图像大小是一样的
@@ -22,10 +22,10 @@ private:
     int m_Height;
     int m_ImageNum;
 public:
-    TextureArray(std::shared_ptr<Shader> &shader, int Width = 500, int Height = 500, int ImageNum = 15);
+    TextureArray(std::shared_ptr<Shader> &shader, int ImageNum = 15, int Width = 500, int Height = 500);
 
     int addTexture(const std::string& path);
-    bool eraseTexture(unsigned int SlotID);
+    bool eraseTexture(int SlotID);
 
     ~TextureArray()
     {

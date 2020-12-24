@@ -22,6 +22,16 @@
 // 电脑核数
 #define CORE_NUM 8
 
+// 最大光源数目
+#define MAX_LIGHT_NUM 10
+
+#define WINDOW_WIDTH 1080
+#define WINDOW_HEIGHT 960
+#define WINDOW_RATIO (1.0f * WINDOW_HEIGHT/WINDOW_HEIGHT)
+
+// 定义View Matrix时用到的
+#define ZNEAR 0.1f
+#define ZFAR 100.0f
 
 // GUI库
 #include "imgui/imgui.h"
@@ -44,6 +54,7 @@ static bool LogCall(const char* function, const char* file, int line)
     {
         std::cout << "[OpenGL Error] (" << error << ")" <<
                   function << "  " << file << ":" << line << std::endl;
+        std::cout << "Error Code:" << error << std::endl;
         return false;
     }
     return true;

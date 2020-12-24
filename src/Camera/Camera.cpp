@@ -99,7 +99,7 @@ void Camera::OnScrollAction(const double &Offset)
         {
             m_Position -= (float)Offset * MoveSpeed * m_Direction;
         }
-        m_Projection = glm::perspective(glm::radians(m_AngleOfView), 1.0f, 0.1f, 100.0f);
+        m_Projection = glm::perspective(glm::radians(m_AngleOfView), WINDOW_RATIO, ZNEAR, ZFAR);
 
         updateCameraVectors();
     }

@@ -10,7 +10,7 @@ class Camera
 {
 public:
     Camera(const float& AngleOfView = 45.0f,
-           const glm::mat4 &Projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f),
+           const glm::mat4 &Projection = glm::perspective(glm::radians(45.0f), WINDOW_RATIO, ZNEAR, ZFAR),
            const glm::vec3 &Position = glm::vec3(0.0f, 0.0f, 0.0f),
            const glm::vec3 &InitUp = glm::vec3(0.0f, 1.0f, 0.0f), // 相机初始上方是y轴正方向
            const glm::vec3 &InitDirection = glm::vec3(0.0f, 0.0f, -1.0f), // 相机屏幕z轴负方向
@@ -29,7 +29,7 @@ public:
     inline void resetZooming()
     {
         m_AngleOfView = InitAngleOfView;
-        m_Projection = glm::perspective(glm::radians(InitAngleOfView), 1.0f, 0.1f, 100.0f);
+        m_Projection = glm::perspective(glm::radians(InitAngleOfView), WINDOW_RATIO, ZNEAR, ZFAR);
     }
     inline glm::mat4 getProjectionMatrix() const
     {

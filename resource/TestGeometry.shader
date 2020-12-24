@@ -66,6 +66,8 @@ uniform int u_TexIndex; // 使用的纹理下标
 uniform sampler2DArray u_Textures; // 纹理数组
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
+uniform samplerCube u_DepthMap; // 深度图
+
 void main()
 {
 	vec3 Norm = normalize(v_Normal);

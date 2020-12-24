@@ -1,38 +1,14 @@
 #shader vertex
+// 几何着色器是负责将所有世界空间的顶点变换到6个不同的光空间的着色器。
+// 因此顶点着色器简单地将顶点变换到世界空间，然后直接发送到几何着色器：
 #version 330 core
 layout(location = 0) in vec4 Position;
-layout(location = 1) in vec4 Normal;
-layout(location = 2) in vec4 Color;
-
 uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
- 
 void main()
 {
-   gl_Position = u_model * vec4(Position.x, Position.y, Position.z, 1.0);
+    gl_Position = u_model * Position;
 }
 
-#version 330 core
-layout (location = 0) in vec4 Position;
-layout (location = 1) in vec3 Normal;
-layout (location = 2) in vec4 Color;
-
-out vec3 FragPosition;
-out vec3 v_Normal;
-out vec4 v_Color;
-
-uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
-
-void main()
-{
-    gl_Position = u_projection * u_view * u_model * vec4(position);
-    FragPosition = vec3(u_model * vec4(Position, 1.0));
-    v_Normal = transpose(inverse(mat3(u_model))) * Normal;
-    v_Color = Color;
-}
 
 #shader geometry
 #version 330 core
@@ -41,7 +17,6 @@ layout (triangle_strip, max_vertices=18) out;
 
 uniform mat4 u_ShadowMatrices[6];
 out vec4 FragPosition; // 从几何着色器输出的Fragment着色器中的坐标 (对Vertex着色器输出的每个Vertex都这样处理)
-
 void main()
 {
     for (int Face = 0; Face < 6; ++Face)
@@ -61,62 +36,27 @@ void main()
 
 #shader fragment
 #version 330 core
-in vec3 FragPosition;
-in vec3 v_Normal;
-in vec4 v_Color;
-
-
-layout(location = 0) out vec4 FragColor;
-
-uniform vec3 u_LightPosition;
-uniform vec3 u_CameraPosition; // 相机位置
-uniform vec4 u_LightColor; // 光源颜色
-uniform float u_zFar;
-
-uniform samplerCube depthMap;
-
-float ShadowCalculation(vec3 fragPos)
+// 计算深度
+// 这个深度就是每个fragment位置和光源位置之间的线性距离
+in vec4 FragPosition;
+struct Light
 {
-    // Get vector between fragment position and light position
-    vec3 FragToLight = FragPosition - u_LightPos;
-    // Use the light to fragment vector to sample from the depth map    
-    float ClosetDepth = texture(depthMap, FragToLight).r;
-
-
-    // It is currently in linear range between [0,1]. Re-transform back to original value
-    ClosetDepth *= u_zFar;
-    // Now get current linear depth as the length between the fragment and light position
-    float CurrentDepth = length(FragToLight);
-    // Now test for shadows
-    float Bias = 0.05; 
-    // 看看哪个阴影更加接近，从而选择保留
-    float Shadow = currentDepth -  Bias > closestDepth ? 1.0 : 0.0;
-
-    return Shadow;
-}
-
+    int isOpen; // 是否开启，1表示开启，0表示关闭
+    vec3 Position; // 位置
+};
+const int MAX_LIGHT_NUM = 10; // 最大光源数目
+uniform Light Lights[MAX_LIGHT_NUM]; // 光源集合
+uniform float zFar; // 定义相机的View Matrix时，设置的zFar
 
 void main()
 {
-	vec3 Normal = normalize(v_Normal);
-
-	// 环境光
-	vec4 Ambient = 0.3 * v_Color;
-
-	// 满射光
-	vec3 LightDirection = normalize(u_LightPosition - FragPosition);
-	float Diff = max(dot(LightDirection, Normal), 0.0f);
-	vec3 Diffuse = Diff * u_LightColor;
-
-	// 反射光
-	vec3 ViewDirection = normalize(ViewPosition - FragPosition);
-	vec3 ReflectDirection = reflect(-LightDirection, Normal);
-	float Spec = 0.0f;
-	vec3 HalfwayDirection = normalize(LightDirection + ViewDirection);
-	Spec = pow(max(dot(normal, HalfwayDirection), 0.0), 64.0);
-	vec3 Specular = Spec * u_LightColor;
-
-	// 计算阴影
-	float Shadow = ShadowCalculation(FragPosition);
-	FragColor = (Ambient + (1.0f - Shadow) * (Diffuse + Specular)) * v_Color;
+	for (int i = 0; i < MAX_LIGHT_NUM; ++i)
+    {
+        if (Lights[i].isOpen != 0)
+        {
+            float Distance = length(FragPosition.xyz - Lights[i].Position);
+            // 把深度映射到[0, 1]上，并写入Buffer
+            gl_FragDepth = Distance / zFar;
+        }
+    }
 }

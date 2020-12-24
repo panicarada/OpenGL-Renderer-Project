@@ -88,12 +88,14 @@ public:
     virtual std::string getClassName() = 0; // 返回几何物体名字
 protected:
     /* 渲染要用的数据结构 */
-    std::shared_ptr<Shader> m_Shader;
     std::unique_ptr<VertexArray> m_VAO;
     std::unique_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
     std::unique_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
     std::unique_ptr<VertexBufferLayout> m_Layout;
     std::shared_ptr<Camera> m_Camera;
+public:
+    std::shared_ptr<Shader> m_Shader;
+
 private:
     glm::quat m_qPitch; // 俯仰角对应四元数
     glm::quat m_qYaw; // 偏航角对应四元数

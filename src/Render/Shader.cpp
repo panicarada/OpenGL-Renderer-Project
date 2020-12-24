@@ -110,6 +110,7 @@ int Shader::getUniformLocation(const std::string &name)
     }
     else
     {
+//        std::cout << name << std::endl;
         DebugCall(int location = glGetUniformLocation(m_RendererID, name.c_str()));
         if (location == -1)
             std::cout << "Warning: uniform '" << name << "' doesn't exist currently!   "  << __FILE_NAME__ << ": " << __LINE__ << std::endl;
@@ -120,6 +121,7 @@ int Shader::getUniformLocation(const std::string &name)
 
 void Shader::bind() const
 {
+//    std::cout << m_RendererID << std::endl;
     DebugCall(glUseProgram(m_RendererID));
 }
 
@@ -148,7 +150,7 @@ void Shader::setUniform4f(const std::string Name, float v0, float v1, float v2, 
     DebugCall(glUniform4f(getUniformLocation(Name), v0, v1, v2, v3));
 }
 
-void Shader::setUniformMat4f(const std::string Name, glm::mat4 &matrix)
+void Shader::setUniformMat4f(const std::string Name, const glm::mat4 &matrix)
 {
     // &matrix[0][0]表示第一个元素的地址，之后OpenGL会读取连续的16个数
     DebugCall(glUniformMatrix4fv(getUniformLocation(Name), 1, GL_FALSE, &matrix[0][0]));

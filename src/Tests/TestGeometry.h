@@ -7,6 +7,7 @@
 #include "Test.h"
 #include "Geometry.h"
 #include "Light.h"
+#include "Shadow.h"
 #include <set>
 
 namespace test
@@ -35,6 +36,7 @@ namespace test
         std::shared_ptr<Shader> m_Shader;
         std::shared_ptr<Camera> m_Camera;
         std::shared_ptr<TextureArray> m_TextureArray;
+        std::shared_ptr<Shadow> m_Shadow;
 
         glm::vec4 m_Color;
         glm::vec3 m_Position;

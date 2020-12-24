@@ -67,7 +67,7 @@ int main()
 
     GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
 
-    window = glfwCreateWindow( 1080, 960, "My App", nullptr, nullptr);
+    window = glfwCreateWindow( WINDOW_WIDTH, WINDOW_HEIGHT, "My App", nullptr, nullptr);
 
     if( window == nullptr )
     {

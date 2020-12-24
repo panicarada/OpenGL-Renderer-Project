@@ -46,7 +46,7 @@ struct Light
 };
 const int MAX_LIGHT_NUM = 10; // 最大光源数目
 uniform Light Lights[MAX_LIGHT_NUM]; // 光源集合
-uniform float zFar; // 定义相机的View Matrix时，设置的zFar
+uniform float u_zFar; // 定义相机的View Matrix时，设置的zFar
 
 void main()
 {
@@ -56,7 +56,7 @@ void main()
         {
             float Distance = length(FragPosition.xyz - Lights[i].Position);
             // 把深度映射到[0, 1]上，并写入Buffer
-            gl_FragDepth = Distance / zFar;
+            gl_FragDepth = Distance / u_zFar;
         }
     }
 }

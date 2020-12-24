@@ -29,6 +29,9 @@ void test::TestGeometry::OnRender()
     m_Shader->unbind();
     m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
     m_Shader->bind();
+
+    // 清除z-buffer，用于深度测试；以及清除背景颜色
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // 把深度图传入buffer
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
@@ -273,6 +276,7 @@ test::TestGeometry::TestGeometry()
 
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
+//    m_Shader->setUniform1f("u_zFar", ZFAR);
     m_Camera = std::make_shared<Camera>();
 //    m_Camera->setProjection(glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f), "Perspective");
 
@@ -292,11 +296,10 @@ test::TestGeometry::TestGeometry()
     m_TextureArray = std::make_shared<TextureArray>(m_Shader);
 
     // 阴影
-    m_Shader->setUniform1i("u_DepthMap", 0);
     auto ShadowShader = std::make_shared<Shader>("../resource/Shadow.shader");
     m_Shadow = std::make_shared<Shadow>(ShadowShader, 10*WINDOW_WIDTH, 10*WINDOW_HEIGHT);
-
     m_Shader->bind();
+    m_Shader->setUniform1i("u_DepthMap", 0);
 }
 
 void test::TestGeometry::OnKeyAction(int key, int mods)

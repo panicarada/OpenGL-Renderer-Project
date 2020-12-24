@@ -63,10 +63,30 @@ uniform vec4 u_Ambient; // 环境光
 uniform vec3 u_CameraPosition; // 相机位置
 
 uniform int u_TexIndex; // 使用的纹理下标
-uniform sampler2DArray u_Textures; // 纹理数组
+// uniform sampler2DArray u_Textures; // 纹理数组
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
 uniform samplerCube u_DepthMap; // 深度图
+
+uniform float u_zFar;
+
+
+// 计算阴影对光线的削减效果，范围是[0, 1]，1表示完全被阴影遮住，只有环境光效果
+float calculateShadow(vec3 FragPos, vec3 LightPos)
+{
+	vec3 FragToLight = FragPos - LightPos;
+	// 用光线到Fragment的向量采样深度图
+	float ClosetDepth = texture(u_DepthMap, FragToLight).r;
+	// 现在深度范围是[0, 1]，重新转化为原始的深度
+	ClosetDepth *= u_zFar;
+	float CurrentDepth = length(FragToLight);
+
+	// 滤波处理
+	float bias = 30.0f;
+	float Shadow = CurrentDepth - bias > ClosetDepth ? 1.0f : 0.0f;
+
+	return Shadow;
+}
 
 void main()
 {
@@ -101,10 +121,12 @@ void main()
 	vec4 Specular = vec4(0.0f);
 	vec3 ViewDirection = normalize(u_CameraPosition - FragPosition);
 
+	float Shadow = 0.0f;
 	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
 		if (u_Lights[i].isOpen != 0)
 		{
+			Shadow += calculateShadow(FragPosition, u_Lights[i].Position);
 			vec3 ReflectDir = reflect(-LightDirection[i], Norm);
 			float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);
 			Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
@@ -115,7 +137,7 @@ void main()
 	// 如果有纹理
 	if (u_TexIndex >= 0 && u_TexIndex < 15)
 	{
-		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
+		// Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
 	}
-	FragColor = (0.5 * u_Ambient * u_Material.Ambient + 1.0 * u_Material.Diffuse * Diffuse + 1.0 * u_Material.Specular * Specular) * Color; 
+	FragColor = (0.5 * u_Ambient * u_Material.Ambient + (1.0 - Shadow) * u_Material.Diffuse * Diffuse + (1.0 - Shadow) * u_Material.Specular * Specular) * Color; 
 }

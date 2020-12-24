@@ -38,7 +38,7 @@ void Shadow::renderShadow(const std::set<std::shared_ptr<Geometry>> &GeometrySet
     this->bind(); // 绑定Frame Buffer
     glClear(GL_DEPTH_BUFFER_BIT);
     m_Shader->bind();
-    m_Shader->setUniform1f("zFar", ZFAR);
+    m_Shader->setUniform1f("u_zFar", ZFAR);
 
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);

@@ -48,7 +48,7 @@ test::TestCube::TestCube()
     m_Shader = std::make_shared<Shader>("../resource/TestCube.shader");
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
-    m_Camera->setProjection(glm::perspective(30.0f, 1.0f, 0.1f, 100.0f));
+    m_Camera->setProjection(glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f), "Perspective");
     m_Cube = std::make_shared<Cube>(m_Camera, m_Shader);
     m_Cube->m_Position = glm::vec3(0.0f, 0.0f, -2.0f);
 

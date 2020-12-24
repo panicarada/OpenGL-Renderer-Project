@@ -203,7 +203,7 @@ test::TestShadow::TestShadow()
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
-    m_Camera->setProjection(glm::perspective(30.0f, 1.0f, 0.1f, 100.0f));
+    m_Camera->setProjection(glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f), "Perspective");
     selectedGeometry = nullptr;
 
     // 地板

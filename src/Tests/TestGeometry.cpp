@@ -25,6 +25,25 @@ void test::TestGeometry::OnRender()
         m_Shader->setUniform3f("u_CameraPosition", Position.x, Position.y, Position.z);
     }
 
+    // 渲染排序
+    // 先绘制所有不透明的物体。
+    // 对所有透明的物体排序。
+    // 按顺序绘制所有透明的物体。
+    /*
+    std::vector<std::shared_ptr<Geometry>> sortedGeometrySet(m_GeometrySet.begin(), m_GeometrySet.end());
+
+    using sp = std::shared_ptr<Geometry>; // 名字有点长，临时顶一下缩写
+    std::sort(sortedGeometrySet.begin(), sortedGeometrySet.end(), [&](const sp& geo1, const sp& geo2) -> bool {
+        // 不透明物体排在最前面
+        if (geo1->m_Color[3] >= 0.95f) return true;
+        if (geo2->m_Color[3] >= 0.95f) return false;
+        return (glm::distance(m_Position, geo1->m_Position) >= glm::distance(m_Position, geo2->m_Position));
+    });
+
+    for (auto geometry = sortedGeometrySet.begin(); geometry != sortedGeometrySet.end(); ++geometry)
+    {
+        (*geometry)->draw();
+    }*/
     for (auto geometry : m_GeometrySet)
     {
         geometry->draw();
@@ -257,10 +276,17 @@ test::TestGeometry::TestGeometry()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
+    // 开启混合选项
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+
     m_Shader = std::make_shared<Shader>("../resource/TestGeometry.shader");
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
-    m_Camera->setProjection(glm::perspective(30.0f, 1.0f, 0.1f, 100.0f));
+    m_Camera->setProjection(glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f), "Perspective");
+
     selectedGeometry = nullptr;
 
     // 地板

@@ -19,6 +19,7 @@ void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回�
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods); // 键盘回调（指定Action后，长按只会响应一次）函数
 void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY);
 
+
 std::shared_ptr<Camera> camera = nullptr;
 test::Test* currentTest = nullptr;
 
@@ -26,7 +27,6 @@ test::Test* currentTest = nullptr;
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
-
 
 int main()
 {
@@ -62,15 +62,13 @@ int main()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    // 不能改变窗口大小
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
     GLFWwindow* window; // (In the accompanying source code, this variable is global for simplicity)
 
-//    #define __DEBUG__
+    window = glfwCreateWindow( 1080, 960, "My App", nullptr, nullptr);
 
-    #ifdef __DEBUG__
-    window = glfwCreateWindow( 960, 960, "My App", NULL, NULL);
-    #else
-    window = glfwCreateWindow( 1280, 1280, "My App", nullptr, nullptr);
-    #endif
     if( window == nullptr )
     {
         fprintf( stderr, "Failed to open GLFW window.\n" );
@@ -138,8 +136,6 @@ int main()
     testMenu->RegisterTest<test::TestCylinder>("Cylinder");
     testMenu->RegisterTest<test::TestGeometry>("Geometry");
     testMenu->RegisterTest<test::TestDepth>("Depth");
-
-
 
 
     Renderer renderer;
@@ -225,7 +221,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             }
         }
-
+        if (camera && key == GLFW_KEY_TAB)
+        { // zooming状态恢复
+            camera->resetZooming();
+        }
         if (currentTest)
         {
             currentTest->OnKeyAction(key, mods);
@@ -235,6 +234,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY)
 {
-    // TODO: 摄像机的Zooming
-    std::cout << "Scrolling! (" <<  deltaX << " , " << deltaY << ")" << std::endl;
+    if (camera)
+    {
+        camera->OnScrollAction(deltaY);
+    }
 }

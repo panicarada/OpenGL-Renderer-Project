@@ -9,7 +9,8 @@
 class Camera
 {
 public:
-    Camera(const glm::mat4 &Projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f),
+    Camera(const float& AngleOfView = 45.0f,
+           const glm::mat4 &Projection = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.0f),
            const glm::vec3 &Position = glm::vec3(0.0f, 0.0f, 0.0f),
            const glm::vec3 &InitUp = glm::vec3(0.0f, 1.0f, 0.0f), // 相机初始上方是y轴正方向
            const glm::vec3 &InitDirection = glm::vec3(0.0f, 0.0f, -1.0f), // 相机屏幕z轴负方向
@@ -18,12 +19,17 @@ public:
     void OnKeyAction(GLFWwindow *Window, float deltaTime); // 键盘输入，需要移动
     inline glm::mat4 getViewMatrix() const
     {
-//        std::cout << m_Direction.x  << "  " << m_Direction.y << "  " << m_Direction.z<< std::endl;
         return m_ViewMatrix;
     }
-    inline void setProjection(const glm::mat4 &Projection)
+    inline void setProjection(const glm::mat4 &Projection, const std::string& Tag)
     {
         m_Projection = Projection;
+        m_Tag = Tag;
+    }
+    inline void resetZooming()
+    {
+        m_AngleOfView = InitAngleOfView;
+        m_Projection = glm::perspective(glm::radians(InitAngleOfView), 1.0f, 0.1f, 100.0f);
     }
     inline glm::mat4 getProjectionMatrix() const
     {
@@ -38,12 +44,14 @@ public:
         return m_Direction;
     }
     void OnMouseAction(GLFWwindow* window, glm::vec2 Position);
-
+    void OnScrollAction(const double& Offset);
 private:
     void updateCameraVectors(); // 俯仰角或者偏航角改变后，更新相机向量
 public:
     bool isFPS;
 protected:
+    std::string m_Tag; // 描述相机的标签（比如Orthogonal / Perspective）
+
     glm::mat4 m_Projection; // 投影矩阵
     glm::mat4 m_ViewMatrix; // 视图矩阵
     glm::vec3 m_Position;
@@ -58,4 +66,7 @@ protected:
     glm::quat m_qYaw; // 偏航角对应四元数
     float m_Pitch; // 俯仰角，角度制，相当于绕InitRight的旋转角
     float m_Yaw; // 偏航角，角度制，相当于绕InitUp的旋转角
+
+    const float InitAngleOfView; // 原始的视角大小，用于Reset
+    float m_AngleOfView; // 视角大小，角度制（透视投影中）
 };

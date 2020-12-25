@@ -32,15 +32,20 @@ void test::TestGeometry::OnRender()
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // 把深度图传入buffer
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
+
+    /*
+    glActiveTexture(GL_TEXTURE0);
+
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     for (auto geometry : m_GeometrySet)
     {
         geometry->draw();
     }
-    Floor->draw();
+    Floor->draw();*/
 }
 
 void test::TestGeometry::OnImGuiRender()
@@ -292,14 +297,16 @@ test::TestGeometry::TestGeometry()
     // 光源
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
 
-    // 纹理数组
-    m_TextureArray = std::make_shared<TextureArray>(m_Shader);
-
     // 阴影
     auto ShadowShader = std::make_shared<Shader>("../resource/Shadow.shader");
-    m_Shadow = std::make_shared<Shadow>(ShadowShader, 10*WINDOW_WIDTH, 10*WINDOW_HEIGHT);
+    m_Shadow = std::make_shared<Shadow>(ShadowShader, 10*WINDOW_WIDTH, 10*WINDOW_WIDTH);
     m_Shader->bind();
-    m_Shader->setUniform1i("u_DepthMap", 0);
+    m_Shader->setUniform1i("u_DepthMap", 1);
+    m_Shader->setUniform1i("u_Textures", 0);
+
+
+    // 纹理数组
+    m_TextureArray = std::make_shared<TextureArray>(m_Shader);
 }
 
 void test::TestGeometry::OnKeyAction(int key, int mods)

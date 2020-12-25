@@ -63,10 +63,11 @@ uniform vec4 u_Ambient; // 环境光
 uniform vec3 u_CameraPosition; // 相机位置
 
 uniform int u_TexIndex; // 使用的纹理下标
-// uniform sampler2DArray u_Textures; // 纹理数组
-in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
 uniform samplerCube u_DepthMap; // 深度图
+// uniform sampler2DArray u_Textures; // 纹理数组
+
+in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
 uniform float u_zFar;
 
@@ -75,6 +76,7 @@ uniform float u_zFar;
 float calculateShadow(vec3 FragPos, vec3 LightPos)
 {
 	vec3 FragToLight = FragPos - LightPos;
+
 	// 用光线到Fragment的向量采样深度图
 	float ClosetDepth = texture(u_DepthMap, FragToLight).r;
 	// 现在深度范围是[0, 1]，重新转化为原始的深度
@@ -82,8 +84,8 @@ float calculateShadow(vec3 FragPos, vec3 LightPos)
 	float CurrentDepth = length(FragToLight);
 
 	// 滤波处理
-	float bias = 30.0f;
-	float Shadow = CurrentDepth - bias > ClosetDepth ? 1.0f : 0.0f;
+	float bias = 5.0f;
+	float Shadow = CurrentDepth - bias > ClosetDepth ? 0.4f : 0.0f;
 
 	return Shadow;
 }
@@ -122,10 +124,14 @@ void main()
 	vec3 ViewDirection = normalize(u_CameraPosition - FragPosition);
 
 	float Shadow = 0.0f;
+
+
 	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
 		if (u_Lights[i].isOpen != 0)
 		{
+			// vec3 FragToLight = FragPosition - u_Lights[i].Position;
+			// FragColor = vec4(texture(u_DepthMap, FragToLight).r);
 			Shadow += calculateShadow(FragPosition, u_Lights[i].Position);
 			vec3 ReflectDir = reflect(-LightDirection[i], Norm);
 			float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);

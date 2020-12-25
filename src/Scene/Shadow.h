@@ -17,11 +17,13 @@ public:
                       const std::set<std::shared_ptr<Light>>& LightSet); // 渲染深度图
     inline void bind() const
     {
-        glBindTexture(GL_TEXTURE_CUBE_MAP, FrameBuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, FrameBuffer);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, FrameBuffer);
     }
     inline void unbind() const
     {
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     }
     inline unsigned int getDepthMap() const
     {

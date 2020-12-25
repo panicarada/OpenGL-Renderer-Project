@@ -2,14 +2,14 @@
 
 Shadow::Shadow(const std::shared_ptr<Shader> &shader, int Width, int Height)
     : m_Shader(shader), m_Width(Width), m_Height(Height)
-{
-    glGenFramebuffers(1, &FrameBuffer);
+{ // Create2D(GL_DEPTH_COMPONENT, SHADOWMAP_SIZE, SHADOWMAP_SIZE, GL_DEPTH_COMPONENT, GL_FLOAT);
     glGenTextures(1, &DepthMap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, DepthMap); // 为DepthMap分配包围盒六个面的空间
+
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, DepthMap); // 为DepthMap分配包围盒六个面的空间
     for (unsigned int i = 0;i < 6; ++i)
     {
         // 为深度图包围盒每个面分配空间，nullptr表示数据待定，只是分配空间
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, Width, Height, 0,
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT32, Width, Height, 0,
                      GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
     }
 
@@ -21,6 +21,8 @@ Shadow::Shadow(const std::shared_ptr<Shader> &shader, int Width, int Height)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     // 把DepthMap作为Frame Buffer的颜色缓冲
+
+    glGenFramebuffers(1, &FrameBuffer);
     bind(); // 将包围盒六个面的深度图绑定在Frame Buffer上
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DepthMap, 0);
     // 检查FrameBuffer是否绑定完成
@@ -47,15 +49,15 @@ void Shadow::renderShadow(const std::set<std::shared_ptr<Geometry>> &GeometrySet
     for (int i = 0;i < MAX_LIGHT_NUM; ++i) LightIDs.insert(i);
     for (auto light : LightSet)
     { // 设置光源
-        m_Shader->setUniform3f("Lights[" + std::to_string(light->m_ID) + "].Position", light->m_Position);
-        m_Shader->setUniform1i("Lights[" + std::to_string(light->m_ID) + "].isOpen", 1);
+        m_Shader->setUniform3f("u_Lights[" + std::to_string(light->m_ID) + "].Position", light->m_Position);
+        m_Shader->setUniform1i("u_Lights[" + std::to_string(light->m_ID) + "].isOpen", 1);
         // 这个光源是开启的，我们把它从集合取出
         LightIDs.erase(light->m_ID);
     }
     // LightIDs中剩余的光源都是关闭的
     for (int offLightID : LightIDs)
     {
-        m_Shader->setUniform1i("Lights[" + std::to_string(offLightID) + "].isOpen", 0);
+        m_Shader->setUniform1i("u_Lights[" + std::to_string(offLightID) + "].isOpen", 0);
     }
 
     for (auto light : LightSet)

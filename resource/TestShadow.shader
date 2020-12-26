@@ -3,120 +3,154 @@
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec4 Normal;
 layout(location = 2) in vec4 Color;
+layout(location = 3) in vec2 TexCoord;
 
-uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
- 
-void main()
-{
-   gl_Position = u_model * vec4(Position.x, Position.y, Position.z, 1.0);
-}
+uniform mat4 u_Model;
+uniform mat4 u_Projection;
+uniform mat4 u_View;
+uniform mat4 u_LightSpaceMatrix;
 
-#version 330 core
-layout (location = 0) in vec4 Position;
-layout (location = 1) in vec3 Normal;
-layout (location = 2) in vec4 Color;
-
-out vec3 FragPosition;
-out vec3 v_Normal;
 out vec4 v_Color;
+out vec3 v_Normal;
+out vec3 v_FragPosition;
 
-uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
+out vec4 v_FragPosLightSpace; 
 
-void main()
-{
-    gl_Position = u_projection * u_view * u_model * vec4(position);
-    FragPosition = vec3(u_model * vec4(Position, 1.0));
-    v_Normal = transpose(inverse(mat3(u_model))) * Normal;
-    v_Color = Color;
-}
+out vec2 v_TexCoord;
 
-#shader geometry
-#version 330 core
-layout (triangles) in;
-layout (triangle_strip, max_vertices=18) out;
-
-uniform mat4 u_ShadowMatrices[6];
-out vec4 FragPosition; // 从几何着色器输出的Fragment着色器中的坐标 (对Vertex着色器输出的每个Vertex都这样处理)
+out mat4 debug_v_LightSpaceMatrix;
 
 void main()
 {
-    for (int Face = 0; Face < 6; ++Face)
-    {
-    	gl_Layer = Face; // 几何着色器内置变量，声明现在要渲染哪个面
-    	for (int i  = 0;i < 3; ++i)
-    	{ // 对这个面每个顶点
-    		FragPosition = gl_in[i].gl_Position;
-    		gl_Position = u_ShadowMatrices[Face] * FragPosition;
-    		EmitVertex();
-    	}
-    	EndPrimitive();
-    }
+   gl_Position = u_Projection * u_View * u_Model * Position;
+   v_FragPosition = vec3(u_Model * Position);
+   v_Color = Color;
+   // v_Normal = vec3(Normal);
+   v_Normal = mat3(transpose(inverse(u_Model))) * Normal.xyz;
+
+   v_TexCoord = TexCoord;
+
+   v_FragPosLightSpace = u_LightSpaceMatrix  * vec4(v_FragPosition, 1.0);
+
+   debug_v_LightSpaceMatrix = u_LightSpaceMatrix;
 }
+
 
 
 
 #shader fragment
 #version 330 core
-in vec3 FragPosition;
-in vec3 v_Normal;
+out vec4 FragColor;
+
 in vec4 v_Color;
+in vec3 v_Normal;
+in vec2 v_TexCoord;
+in vec3 v_FragPosition;
+in vec4 v_FragPosLightSpace;
 
+in mat4 debug_v_LightSpaceMatrix;
 
-layout(location = 0) out vec4 FragColor;
-
-uniform vec3 u_LightPosition;
-uniform vec3 u_CameraPosition; // 相机位置
-uniform vec4 u_LightColor; // 光源颜色
+uniform sampler2D u_DepthMap;
+uniform float u_zNear;
 uniform float u_zFar;
 
-uniform samplerCube depthMap;
 
-float ShadowCalculation(vec3 fragPos)
+struct Light
 {
-    // Get vector between fragment position and light position
-    vec3 FragToLight = FragPosition - u_LightPos;
-    // Use the light to fragment vector to sample from the depth map    
-    float ClosetDepth = texture(depthMap, FragToLight).r;
+	int isOpen; // 是否开启，1表示开启，0表示关闭
+	vec3 Position; // 光源位置
+	vec4 Color; // 光源颜色
+	float Brightness; // 光源亮度
+	vec3 Attenuation; // 光源的衰减系数
+};
+const int MAX_LIGHT_NUM = 10; // 最大光源数目
+uniform Light u_Lights[MAX_LIGHT_NUM]; // 光源集合
 
+uniform vec4 u_Ambient; // 环境光
+uniform vec3 u_CameraPosition; // 相机位置
 
-    // It is currently in linear range between [0,1]. Re-transform back to original value
-    ClosetDepth *= u_zFar;
-    // Now get current linear depth as the length between the fragment and light position
-    float CurrentDepth = length(FragToLight);
-    // Now test for shadows
-    float Bias = 0.05; 
-    // 看看哪个阴影更加接近，从而选择保留
-    float Shadow = currentDepth -  Bias > closestDepth ? 1.0 : 0.0;
-
-    return Shadow;
+float max3(vec3 v)
+{ // 求最大值的分量值
+	return max(v.x, max(v.y, v.z));
+}
+float min3(vec3 v)
+{ // 求最小值的分量值
+	return min(v.x, min(v.y, v.z));
 }
 
 
-void main()
+float calculateShadow(vec4 FragPosLightSpace)
 {
-	vec3 Normal = normalize(v_Normal);
+	// vec3 ProjCoords = FragPosLightSpace.xyz * 0.5 + 0.5;
+	// vec3 ProjCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+	// 规约到[0, 1]
+	// ProjCoords = ProjCoords/2.0 + 0.5;
+	// float ClosetDepth = texture(u_DepthMap, ProjCoords.xy).r;
+	// float CurrentDepth = ProjCoords.z;
+	// float Shadow = CurrentDepth > ClosetDepth ? 1.0 : 0.0;
 
-	// 环境光
-	vec4 Ambient = 0.3 * v_Color;
+	// 把范围拉到[0, 1]
+	float minValue = min3(FragPosLightSpace.xyz);
+	float maxValue = max3(FragPosLightSpace.xyz);
 
-	// 满射光
-	vec3 LightDirection = normalize(u_LightPosition - FragPosition);
-	float Diff = max(dot(LightDirection, Normal), 0.0f);
-	vec3 Diffuse = Diff * u_LightColor;
+	vec3 Position = (FragPosLightSpace.xyz - minValue) / (maxValue - minValue);
+	float Depth = texture(u_DepthMap, Position.xy).r;
+	return Depth;
+	// return Depth < FragPosLightSpace.z ? 1.0 : 0.0;
+}
 
-	// 反射光
-	vec3 ViewDirection = normalize(ViewPosition - FragPosition);
-	vec3 ReflectDirection = reflect(-LightDirection, Normal);
-	float Spec = 0.0f;
-	vec3 HalfwayDirection = normalize(LightDirection + ViewDirection);
-	Spec = pow(max(dot(normal, HalfwayDirection), 0.0), 64.0);
-	vec3 Specular = Spec * u_LightColor;
 
-	// 计算阴影
-	float Shadow = ShadowCalculation(FragPosition);
-	FragColor = (Ambient + (1.0f - Shadow) * (Diffuse + Specular)) * v_Color;
+
+
+void main()
+{             
+    vec3 Normal = normalize(v_Normal);
+
+   	// diffuse
+   	vec3 LightDir = normalize(u_Lights[0].Position - v_FragPosition);
+   	float Diff = max(dot(LightDir, Normal), 0.0);
+   	vec4 Diffuse = Diff * u_Lights[0].Color;
+
+   	// specular 
+   	vec3 ViewDir = normalize(u_CameraPosition - v_FragPosition);
+   	vec3 ReflectDir = reflect(-LightDir, Normal);
+   	float spec = 0.0;
+   	vec3 HalfwayDir = normalize(LightDir + ViewDir);
+   	spec = pow(max(dot(Normal, HalfwayDir), 0.0), 64.0);
+   	vec4 Specular = spec * u_Lights[0].Color;
+
+   	// calculate Shadow
+   	float Shadow = calculateShadow(v_FragPosLightSpace);
+
+   	// FragColor = (u_Ambient + (1.0 - Shadow) * (Diffuse + Specular)) * v_Color;
+   	FragColor = ((1.0 - Shadow) * (Diffuse + Specular)) * v_Color;
+
+
+
+   	// // vec3 Position = v_FragPosLightSpace.xyz / length(v_FragPosLightSpace);
+   	// vec3 Position;
+   	// Position[0] = v_FragPosLightSpace.x >= -2 ? 1.0 : 0.0;
+   	// Position[1] = v_FragPosLightSpace.y  >= -2 ? 1.0 : 0.0;
+   	// Position[2] = v_FragPosLightSpace.z  >= -2 ? 1.0 : 0.0;
+
+   	float minValue = min3(v_FragPosLightSpace.xyz);
+	float maxValue = max3(v_FragPosLightSpace.xyz);
+
+	vec3 Position = (v_FragPosLightSpace.xyz - vec3(minValue)) / (maxValue - minValue);
+
+
+
+	vec4 Color;
+   Color = texture(u_DepthMap, Position.xy);
+// 
+	// float Color;
+	// if (abs(Depth) <= 1.0) Color = 0.0f;
+	// else Color  = 1.0f;
+
+	// float Color = 0.0f;
+	// if (abs(v_FragPosLightSpace.z) < 1.0f) Color = 0.0f;
+	// else Color = 1.0f;
+
+   // FragColor = Color;
+   	FragColor = vec4(Position, 1.0);
 }

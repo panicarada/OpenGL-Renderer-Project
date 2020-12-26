@@ -6,15 +6,15 @@ layout(location = 2) in vec4 Color;
 
 out vec4 v_Color;
 
-uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
+uniform mat4 u_Model;
+uniform mat4 u_Projection;
+uniform mat4 u_View;
 // uniform mat4 u_MVP; // model view projection matrix
 
 void main()
 {
-   gl_Position = u_projection * u_view * u_model * Position;
-   // gl_Position = u_projection * u_model * Position;
+   gl_Position = u_Projection * u_View * u_Model * Position;
+   // gl_Position = u_Projection * u_Model * Position;
    v_Color = Color;
 }
 

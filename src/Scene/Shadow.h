@@ -15,16 +15,6 @@ public:
     Shadow(const std::shared_ptr<Shader>& shader, int Width, int Height);
     void renderShadow(const std::set<std::shared_ptr<Geometry>>& GeometrySet,
                       const std::set<std::shared_ptr<Light>>& LightSet); // 渲染深度图
-    inline void bind() const
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, FrameBuffer);
-//        glBindTexture(GL_TEXTURE_CUBE_MAP, FrameBuffer);
-    }
-    inline void unbind() const
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    }
     inline unsigned int getDepthMap() const
     {
         return DepthMap;

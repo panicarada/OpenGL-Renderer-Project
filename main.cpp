@@ -13,6 +13,8 @@
 #include "Tests/TestGeometry.h"
 #include "Tests/TestDepth.h"
 
+#include "TestShadow.h"
+
 
 
 void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回调函数
@@ -136,6 +138,7 @@ int main()
     testMenu->RegisterTest<test::TestCylinder>("Cylinder");
     testMenu->RegisterTest<test::TestGeometry>("Geometry");
     testMenu->RegisterTest<test::TestDepth>("Depth");
+    testMenu->RegisterTest<test::TestShadow>("Shadow");
 
 
     Renderer renderer;

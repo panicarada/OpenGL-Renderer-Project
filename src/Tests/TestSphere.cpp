@@ -37,7 +37,7 @@ void test::TestSphere::OnImGuiRender()
         catch (...)
         { // 不是球体点击这项不会有反应
             std::cout << "The type " << m_Sphere->getClassName()
-            << " is not suppose the change the horizontal subdivision" << std::endl;
+                      << " is not suppose the change the horizontal subdivision" << std::endl;
         }
     }
     if (ImGui::SliderInt("Vertical Subdivision", &m_VerticalSteps, 20, 1000))

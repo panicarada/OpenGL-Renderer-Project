@@ -35,9 +35,9 @@ public:
         glm::mat4 Model = this->getModelMatrix();
         glm::mat4 Projection = m_Camera->getProjectionMatrix();
         glm::mat4 View = m_Camera->getViewMatrix();
-        m_Shader->setUniformMat4f("u_model", Model);
-        m_Shader->setUniformMat4f("u_projection", Projection);
-        m_Shader->setUniformMat4f("u_view", View);
+        m_Shader->setUniformMat4f("u_Model", Model);
+        m_Shader->setUniformMat4f("u_Projection", Projection);
+        m_Shader->setUniformMat4f("u_View", View);
         // 设置材质
         m_Shader->setUniform4f("u_Material.Ambient", m_Material.Ambient);
         m_Shader->setUniform4f("u_Material.Diffuse", m_Material.Diffuse);

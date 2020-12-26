@@ -5,9 +5,9 @@ layout(location = 1) in vec4 Normal;
 layout(location = 2) in vec4 Color;
 layout(location = 3) in vec2 TexCoord;
 
-uniform mat4 u_model;
-uniform mat4 u_projection;
-uniform mat4 u_view;
+uniform mat4 u_Model;
+uniform mat4 u_Projection;
+uniform mat4 u_View;
 
 out vec4 v_Color;
 out vec3 v_Normal;
@@ -17,11 +17,11 @@ out vec2 v_TexCoord;
 
 void main()
 {
-   gl_Position = u_projection * u_view * u_model * Position;
-   FragPosition = vec3(u_model * Position);
+   gl_Position = u_Projection * u_View * u_Model * Position;
+   FragPosition = vec3(u_Model * Position);
    v_Color = Color;
    // v_Normal = vec3(Normal);
-   v_Normal = mat3(transpose(inverse(u_model))) * vec3(Normal);
+   v_Normal = mat3(transpose(inverse(u_Model))) * vec3(Normal);
 
    v_TexCoord = TexCoord;
 }
@@ -64,31 +64,10 @@ uniform vec3 u_CameraPosition; // 相机位置
 
 uniform int u_TexIndex; // 使用的纹理下标
 
-uniform samplerCube u_DepthMap; // 深度图
-// uniform sampler2DArray u_Textures; // 纹理数组
+uniform sampler2DArray u_Textures; // 纹理数组
 
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 
-uniform float u_zFar;
-
-
-// 计算阴影对光线的削减效果，范围是[0, 1]，1表示完全被阴影遮住，只有环境光效果
-float calculateShadow(vec3 FragPos, vec3 LightPos)
-{
-	vec3 FragToLight = FragPos - LightPos;
-
-	// 用光线到Fragment的向量采样深度图
-	float ClosetDepth = texture(u_DepthMap, FragToLight).r;
-	// 现在深度范围是[0, 1]，重新转化为原始的深度
-	ClosetDepth *= u_zFar;
-	float CurrentDepth = length(FragToLight);
-
-	// 滤波处理
-	float bias = 5.0f;
-	float Shadow = CurrentDepth - bias > ClosetDepth ? 0.4f : 0.0f;
-
-	return Shadow;
-}
 
 void main()
 {
@@ -123,16 +102,10 @@ void main()
 	vec4 Specular = vec4(0.0f);
 	vec3 ViewDirection = normalize(u_CameraPosition - FragPosition);
 
-	float Shadow = 0.0f;
-
-
 	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
 		if (u_Lights[i].isOpen != 0)
 		{
-			// vec3 FragToLight = FragPosition - u_Lights[i].Position;
-			// FragColor = vec4(texture(u_DepthMap, FragToLight).r);
-			Shadow += calculateShadow(FragPosition, u_Lights[i].Position);
 			vec3 ReflectDir = reflect(-LightDirection[i], Norm);
 			float Spec = pow(max(dot(ViewDirection, ReflectDir), 0.0), u_Material.Highlight);
 			Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
@@ -143,7 +116,7 @@ void main()
 	// 如果有纹理
 	if (u_TexIndex >= 0 && u_TexIndex < 15)
 	{
-		// Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
+		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
 	}
-	FragColor = (0.5 * u_Ambient * u_Material.Ambient + (1.0 - Shadow) * u_Material.Diffuse * Diffuse + (1.0 - Shadow) * u_Material.Specular * Specular) * Color; 
+	FragColor = (0.5 * u_Ambient * u_Material.Ambient + (1.0) * u_Material.Diffuse * Diffuse + (1.0) * u_Material.Specular * Specular) * Color; 
 }

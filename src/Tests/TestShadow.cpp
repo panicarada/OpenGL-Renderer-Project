@@ -24,18 +24,16 @@ void test::TestShadow::OnRender()
 
     // 启用深度图
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_Shadow->getDepthMap());
+    glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
+    m_Shader->bind();
     m_Shader->setUniform1f("u_zNear", ZNEAR);
     m_Shader->setUniform1f("u_zFar", ZFAR);
 
-    m_Shader->bind();
     if (m_Camera)
     { // 输入相机位置
         auto Position = m_Camera->getPosition();
         m_Shader->setUniform3f("u_CameraPosition", Position.x, Position.y, Position.z);
     }
-
-    // 清除z-buffer，用于深度测试；以及清除背景颜色
     for (auto geometry : m_GeometrySet)
     {
         geometry->draw();
@@ -51,7 +49,10 @@ void test::TestShadow::OnImGuiRender()
     if (ImGui::SliderFloat3("Light Position", &selectedLight->m_Position.x, -10.0f, 10.0f))
     {
         selectedLight->updateData();
+        // 重新计算阴影
         m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
+        // 重新采样
+        OnRender();
     }
     if (ImGui::SliderFloat("Light Brightness", &selectedLight->m_Brightness, 0.5f, 5.0f))
     {
@@ -65,12 +66,13 @@ test::TestShadow::TestShadow()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
-    glCullFace(GL_FRONT);
+    glEnable(GL_CULL_FACE);
 
 
     m_Shader = std::make_shared<Shader>("../resource/TestShadow.shader");
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
+
 
     // 地板
     Floor = std::make_shared<Cube>(m_Camera, m_Shader);
@@ -85,7 +87,6 @@ test::TestShadow::TestShadow()
     m_GeometrySet.insert(Floor);
     m_GeometrySet.insert(cube);
 
-
     // 光源
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
     selectedLight = std::make_shared<Light>(m_Shader);
@@ -95,8 +96,10 @@ test::TestShadow::TestShadow()
     selectedLight->updateData();
 
     // 阴影
-    m_Shadow = std::make_shared<Shadow>(m_Shader, 10*WINDOW_WIDTH, 10*WINDOW_HEIGHT);
+    auto ShadowShader = std::make_shared<Shader>("../resource/Shadow.shader");
     m_Shader->setUniform1i("u_DepthMap", 0); // 深度图是TEXTURE0
+    m_Shadow = std::make_shared<Shadow>(ShadowShader);
+    m_Shadow->setSamples(m_Shader);
 
     m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
 }

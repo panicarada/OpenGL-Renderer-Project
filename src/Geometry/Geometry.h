@@ -38,6 +38,7 @@ public:
         m_Shader->setUniformMat4f("u_Model", Model);
         m_Shader->setUniformMat4f("u_Projection", Projection);
         m_Shader->setUniformMat4f("u_View", View);
+
         // 设置材质
         m_Shader->setUniform4f("u_Material.Ambient", m_Material.Ambient);
         m_Shader->setUniform4f("u_Material.Diffuse", m_Material.Diffuse);
@@ -51,7 +52,6 @@ public:
         { // 负数下标表示没有纹理
             m_Shader->setUniform1i("u_TexIndex", -1);
         }
-
         renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
     }
     // 根据旋转角度重建旋转矩阵

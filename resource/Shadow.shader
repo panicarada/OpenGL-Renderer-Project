@@ -4,19 +4,53 @@
 #version 330 core
 layout(location = 0) in vec4 Position;
 
-uniform mat4 u_LightSpaceMatrix;
 uniform mat4 u_Model;
 void main()
 {
-    gl_Position = u_LightSpaceMatrix * u_Model * Position;
+    gl_Position = u_Model * Position;
 }
 
+
+#shader geometry
+#version 330 core
+layout (triangles) in;
+layout (triangle_strip, max_vertices=18) out;
+uniform mat4 u_LightSpaceMatrices[6];
+//
+out vec4 FragPos; // FragPos from GS (output per emitvertex)
+
+void main()
+{
+    for(int Face = 0; Face < 6; ++Face)
+    {
+        gl_Layer = Face; // built-in variable that specifies to which Face we render.
+        for(int i = 0; i < 3; ++i) // for 3表示三角形的每个顶点
+        { // 计算这个fragment在每个光投影面上，在光视角下的坐标
+            FragPos = gl_in[i].gl_Position;
+            gl_Position = u_LightSpaceMatrices[Face] * FragPos;
+            EmitVertex(); // 计算完fragment，把得到的值发出
+        }
+        EndPrimitive();
+    }
+}
 
 
 
 #shader fragment
 #version 330 core
+in vec4 FragPos;
+
+uniform vec3 u_LightPosition;
+uniform float u_zFar;
+
 void main()
 {
-	
+    // 点到光源的距离就是原始的深度
+    float LightDistance = length(FragPos.xyz - u_LightPosition);
+
+    // 归一化到[0, 1]
+    LightDistance = LightDistance / u_zFar;
+
+    // 写入depth map
+    gl_FragDepth = LightDistance;
 }

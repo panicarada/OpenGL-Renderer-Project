@@ -27,6 +27,9 @@
 
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 960
+
+
+
 #define WINDOW_RATIO (1.0f * WINDOW_HEIGHT/WINDOW_HEIGHT)
 
 // 定义View Matrix时用到的

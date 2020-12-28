@@ -131,6 +131,7 @@ int main()
     auto testMenu = new test::TestMenu(currentTest);
     currentTest = testMenu;
 
+
     testMenu->RegisterTest<test::TestBatchColor>("Batch Color");
     testMenu->RegisterTest<test::TestTexture>("Texture");
     testMenu->RegisterTest<test::TestSphere>("Sphere");
@@ -182,13 +183,11 @@ int main()
         glfwPollEvents();
     }
 
-
     delete currentTest;
     if (currentTest != testMenu)
     {
         delete testMenu;
     }
-
     // Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

@@ -24,8 +24,8 @@ void main()
 }
 
 
-	#shader fragment
-	#version 330 core
+#shader fragment
+#version 330 core
 layout(location = 0) out vec4 FragColor;
 
 in vec4 v_Color;
@@ -66,43 +66,47 @@ uniform float u_zFar;
 // 计算blocker平均深度时搜索的范围
 // @params:
 //    LightSize: 光的大小
-//    LightSpaceCoordDepth: Fragment在光空间下的坐标深度
-float calBlockerSearchWidth(float LightSize, float LightSpaceCoordDepth)
+//    LightToFrag: Fragment相对于光的坐标
+float calBlockerSearchWidth(float LightSize, vec3 LightToFrag)
 {
-   return LightSize * (LightSpaceCoordDepth - u_zNear) / u_CameraPosition.z;
+	float CurrentDepth = length(LightToFrag);
+	float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag).r;
+	return LightSize * (CurrentDepth - ClosetDepth) / CurrentDepth; // 遮挡这个Fragment的物体越近，要搜的范围越大
 }
 
 uniform sampler1D u_RandomMap; // 噪声图，用于随机采样
 // 根据噪声图随机生成一个vec3，范围是[-0.5, 0.5]^3
 vec3 genRandDirection(float Seed)
 { // 原本噪声图值的范围是[0, 1]
-   float Rand1 = texture(u_RandomMap, Seed).x;
-   float Rand2 = texture(u_RandomMap, Seed + Rand1).y;
-   float Rand3 = texture(u_RandomMap, Seed + fract(Rand1 * Rand2)).x;
+   float Rand1 = texture(u_RandomMap, fract(Seed)).x;
+   float Rand2 = texture(u_RandomMap, fract(Seed + Rand1)).x;
+   float Rand3 = texture(u_RandomMap, fract(Seed + Rand1 * Rand2)).x;
    return vec3(Rand1, Rand2, Rand3) - vec3(1.0);
 }
 
 // 计算blocker的平均深度
 // @params:
 //    LightSize: 光的大小
-//    LightSpaceCoord: Fragment在光空间下的坐标
+//    LightToFrag: Fragment相对于光的坐标
 //    Bias: 深度比较允许的偏差值
 uniform int u_BlockerSampleNum; // 采样数目
-float calBlockerAvgDistance(float LightSize, vec3 LightSpaceCoord, float Bias)
+float calBlockerAvgDistance(float LightSize, vec3 LightToFrag, float Bias)
 {
 	int BlockerNum = 0; // 采样点中，blocker的数目（即比采样点更接近光的点）
 	float BlockerDistSum = 0.0;
-	float CurrentDepth = length(LightSpaceCoord);
-	float SearchWidth = calBlockerSearchWidth(LightSize, CurrentDepth) * 0.01f;
+	float CurrentDepth = length(LightToFrag);
+	const float Factor = 1.0f; // 调整范围的常数
+	float SearchWidth = calBlockerSearchWidth(LightSize, LightToFrag) * Factor;
 	for (int i = 0;i < u_BlockerSampleNum; ++i)
 	{
-	  // 在Depth Map中找到采样点的深度
-	  float SampleDepth = u_zFar * texture(u_DepthMap, LightSpaceCoord + SearchWidth * genRandDirection(i/float(u_BlockerSampleNum))).r;
-	  if (SampleDepth + Bias < CurrentDepth)
-	  { // 采样点深度小于Fragment，所以是blocker
-		 BlockerNum ++;
-		 BlockerDistSum += SampleDepth;
-	  }
+		// 在Depth Map中找到采样点的深度
+		float SampleDepth = u_zFar * texture(u_DepthMap, LightToFrag + SearchWidth *
+											genRandDirection(abs(CurrentDepth * i * LightToFrag.x))).r;
+		if (SampleDepth + Bias < CurrentDepth)
+		{ // 采样点深度小于Fragment，所以是blocker
+			BlockerNum ++;
+			BlockerDistSum += SampleDepth / u_zFar; // 深度要归一化到[0, 1]
+		}
 	}
 	if (BlockerNum > 0) return BlockerDistSum / BlockerNum;
 	return -1;  // 表示没有blocker，Fragment被光线直射
@@ -111,16 +115,16 @@ float calBlockerAvgDistance(float LightSize, vec3 LightSpaceCoord, float Bias)
 // 计算半影的宽度，用于之后的PCF采样
 // @params:
 //    LightSize: 光的大小
-//    LightSpaceCoord: Fragment在光空间下的坐标
-float calPenumbraWidth(float LightSize, vec3 LightSpaceCoord)
+//    LightToFrag: Fragment相对于光的坐标
+float calPenumbraWidth(float LightSize, vec3 LightToFrag)
 {
-	float Bias = 0.05;
-	float BlockerAvgDistance = calBlockerAvgDistance(LightSize, LightSpaceCoord, Bias);
+	float Bias = 0.12;
+	float BlockerAvgDistance = calBlockerAvgDistance(LightSize, LightToFrag, Bias);
 
-	if (BlockerAvgDistance < 0) return 1;
+	if (BlockerAvgDistance < 0) return -1.0f; // 毫无疑问没有遮挡，不需要PCF采样
 
 	// 半影宽度计算公式，由nvidia文章给出
-	float PenumbraWidth = (length(LightSpaceCoord) - BlockerAvgDistance) * LightSize / BlockerAvgDistance;
+	float PenumbraWidth = (length(LightToFrag) - BlockerAvgDistance) * LightSize / BlockerAvgDistance;
 
 	return PenumbraWidth;
 }
@@ -128,22 +132,26 @@ float calPenumbraWidth(float LightSize, vec3 LightSpaceCoord)
 // 用PCF计算阴影值，0表示被光直射，1表示完全阴影
 // @params:
 //    LightSize: 光的大小
-//    LightSpaceCoord: Fragment在光空间下的坐标
+//    LightToFrag: Fragment相对于光的坐标
 uniform int u_PCFSampleNum; // PCF采样点的数目
-float calSoftShadow(float LightSize, vec3 LightSpaceCoord)
+float calSoftShadow(float LightSize, vec3 LightToFrag)
 {
-	float PCFWidth = calPenumbraWidth(LightSize, LightSpaceCoord) * 0.01f;
+	const float Factor = 1.5f;
+	float PCFWidth = calPenumbraWidth(LightSize, LightToFrag) * Factor;
 	float Sum = 0.0;
-	float Bias = 0.05;
-
-	float CurrentDepth = length(LightSpaceCoord);
-	for (int i = 0;i < u_PCFSampleNum; ++i)
-	{ // 常规的PCF流程
-		float ClosetDepth = u_zFar * texture(u_DepthMap, LightSpaceCoord + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
-		Sum += (ClosetDepth + Bias < CurrentDepth) ? 1.0 : 0.0;
+	float Bias = 0.12;
+	float CurrentDepth = length(LightToFrag);
+	if (PCFWidth <= 0.0f)
+	{ // 毫无疑问没有遮挡
+		return 0.0f;
 	}
 
-	return Sum / u_PCFSampleNum;
+    for (int i = 0;i < u_PCFSampleNum; ++i)
+    { // 常规的PCF流程
+       float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
+       Sum += (ClosetDepth + Bias < CurrentDepth) ? 1.0 : 0.0;
+    }
+    return Sum / u_PCFSampleNum;
 }
 
 void main()
@@ -184,8 +192,8 @@ void main()
 	}
 	vec4 Color = v_Color;
 	// 计算阴影
-	 float Shadow = calSoftShadow(u_Lights[0].LightSize, v_FragPosition - u_Lights[0].Position);
-//	float Shadow = 0.0f;
+	float Shadow = calSoftShadow(u_Lights[0].LightSize, v_FragPosition - u_Lights[0].Position);
+//	Shadow = 0.0f;
 	FragColor = (u_Ambient + (Diffuse + Specular) * (1.0 - Shadow)) * v_Color;
 //	FragColor = vec4(Shadow);
 }

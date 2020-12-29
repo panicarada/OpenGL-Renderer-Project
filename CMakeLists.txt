@@ -51,6 +51,6 @@ add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src
         lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Tests/TestCube.cpp src/Tests/TestCube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Tests/TestCylinder.cpp src/Tests/TestCylinder.h src/Tests/TestGeometry.cpp src/Tests/TestGeometry.h src/Scene/Light.h src/Scene/Scene.cpp src/Scene/Scene.h src/Tests/TestDepth.cpp src/Tests/TestDepth.h src/Render/FrameBuffer.h src/Scene/Shadow.cpp src/Scene/Shadow.h
         src/Tests/TestShadow.h src/Tests/TestTexture.cpp src/Tests/TestTexture.h
         lib/include/stb_image.h lib/stb_image/stb_image.cpp src/Render/TextureArray.cpp src/Scene/Light.cpp
-        lib/include/stb_image_resize.h lib/stb_image/stb_image_resize.cpp src/Tests/TestShadow.cpp src/Tests/TestShadowPCSS.cpp src/Tests/TestShadowPCSS.h src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp src/Scene/SoftShadow.h)
+        lib/include/stb_image_resize.h lib/stb_image/stb_image_resize.cpp src/Tests/TestShadow.cpp src/Tests/TestShadowPCSS.cpp src/Tests/TestShadowPCSS.h src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp src/Scene/SoftShadow.h src/Tests/TestShadowVSM.cpp src/Tests/TestShadowVSM.h)
 target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX)
 

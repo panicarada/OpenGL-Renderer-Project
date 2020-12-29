@@ -21,6 +21,6 @@ public:
     }
 private:
     unsigned int FBO;
-    unsigned int SoftShadowMap; // 3D阴影贴图
+    unsigned int SoftShadowMap;
     std::shared_ptr<Shader> m_Shader;
 };

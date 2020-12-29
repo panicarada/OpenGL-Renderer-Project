@@ -11,8 +11,8 @@ void main()
 }
 
 
-#shader geometry
-#version 330 core
+    #shader geometry
+    #version 330 core
 layout (triangles) in;
 layout (triangle_strip, max_vertices=18) out;
 uniform mat4 u_LightSpaceMatrices[6];
@@ -36,8 +36,8 @@ void main()
 
 
 
-#shader fragment
-#version 330 core
+    #shader fragment
+    #version 330 core
 in vec4 FragPos;
 
 uniform vec3 u_LightPosition;

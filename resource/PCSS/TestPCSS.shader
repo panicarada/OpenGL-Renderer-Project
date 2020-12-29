@@ -24,8 +24,8 @@ void main()
 }
 
 
-#shader fragment
-#version 330 core
+	#shader fragment
+	#version 330 core
 layout(location = 0) out vec4 FragColor;
 
 in vec4 v_Color;
@@ -78,10 +78,10 @@ uniform sampler1D u_RandomMap; // 噪声图，用于随机采样
 // 根据噪声图随机生成一个vec3，范围是[-0.5, 0.5]^3
 vec3 genRandDirection(float Seed)
 { // 原本噪声图值的范围是[0, 1]
-   float Rand1 = texture(u_RandomMap, fract(Seed)).x;
-   float Rand2 = texture(u_RandomMap, fract(Seed + Rand1)).x;
-   float Rand3 = texture(u_RandomMap, fract(Seed + Rand1 * Rand2)).x;
-   return vec3(Rand1, Rand2, Rand3) - vec3(1.0);
+	float Rand1 = texture(u_RandomMap, fract(Seed)).x;
+	float Rand2 = texture(u_RandomMap, fract(Seed + Rand1)).x;
+	float Rand3 = texture(u_RandomMap, fract(Seed + Rand1 * Rand2)).x;
+	return vec3(Rand1, Rand2, Rand3) - vec3(1.0);
 }
 
 // 计算blocker的平均深度
@@ -101,7 +101,7 @@ float calBlockerAvgDistance(float LightSize, vec3 LightToFrag, float Bias)
 	{
 		// 在Depth Map中找到采样点的深度
 		float SampleDepth = u_zFar * texture(u_DepthMap, LightToFrag + SearchWidth *
-											genRandDirection(abs(CurrentDepth * i * LightToFrag.x))).r;
+		genRandDirection(abs(CurrentDepth * i * LightToFrag.x))).r;
 		if (SampleDepth + Bias < CurrentDepth)
 		{ // 采样点深度小于Fragment，所以是blocker
 			BlockerNum ++;
@@ -146,12 +146,12 @@ float calSoftShadow(float LightSize, vec3 LightToFrag)
 		return 0.0f;
 	}
 
-    for (int i = 0;i < u_PCFSampleNum; ++i)
-    { // 常规的PCF流程
-       float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
-       Sum += (ClosetDepth + Bias < CurrentDepth) ? 1.0 : 0.0;
-    }
-    return Sum / u_PCFSampleNum;
+	for (int i = 0;i < u_PCFSampleNum; ++i)
+	{ // 常规的PCF流程
+		float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
+		Sum += (ClosetDepth + Bias < CurrentDepth) ? 1.0 : 0.0;
+	}
+	return Sum / u_PCFSampleNum;
 }
 
 void main()
@@ -193,7 +193,7 @@ void main()
 	vec4 Color = v_Color;
 	// 计算阴影
 	float Shadow = calSoftShadow(u_Lights[0].LightSize, v_FragPosition - u_Lights[0].Position);
-//	Shadow = 0.0f;
+	//	Shadow = 0.0f;
 	FragColor = (u_Ambient + (Diffuse + Specular) * (1.0 - Shadow)) * v_Color;
-//	FragColor = vec4(Shadow);
+	//	FragColor = vec4(Shadow);
 }

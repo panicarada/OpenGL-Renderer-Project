@@ -17,7 +17,7 @@ void test::TestShadow::OnRender()
 {
     DebugCall(glClearColor(0.1f, 0.3f, 0.5f, 0.6f));
     // 渲染阴影
-//    m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
+//    m_Shadow->render(m_GeometrySet, m_LightSet);
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -50,7 +50,7 @@ void test::TestShadow::OnImGuiRender()
     {
         selectedLight->updateData();
         // 重新计算阴影
-        m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
+        m_Shadow->render(m_GeometrySet, m_LightSet);
         // 重新采样
         OnRender();
     }
@@ -101,5 +101,5 @@ test::TestShadow::TestShadow()
     m_Shadow = std::make_shared<Shadow>(ShadowShader);
     m_Shadow->setSamples(m_Shader);
 
-    m_Shadow->renderShadow(m_GeometrySet, m_LightSet);
+    m_Shadow->render(m_GeometrySet, m_LightSet);
 }

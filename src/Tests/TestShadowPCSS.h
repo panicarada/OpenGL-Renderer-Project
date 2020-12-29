@@ -8,6 +8,7 @@
 #include "Geometry.h"
 #include "Light.h"
 #include "Shadow.h"
+#include "SoftShadow.h"
 #include <set>
 #include <PoissonMap.h>
 
@@ -38,6 +39,7 @@ namespace test
         std::shared_ptr<PoissonMap> m_RandomMap; // 噪声图，用于在shader中获取随机数
 
         std::shared_ptr<Shadow> m_Shadow;
+        std::shared_ptr<SoftShadow> m_SoftShadow;
     };
 
 }

@@ -13,13 +13,13 @@ class Shadow
 {
 public:
     Shadow(const std::shared_ptr<Shader>& shader);
-    void renderShadow(const std::set<std::shared_ptr<Geometry>>& GeometrySet,
+    void render(const std::set<std::shared_ptr<Geometry>>& GeometrySet,
                       const std::set<std::shared_ptr<Light>>& LightSet); // 渲染深度图
     inline unsigned int getDepthMap() const
     {
         return DepthMap;
     }
-    void setSamples(const std::shared_ptr<Shader>& sampledShader) const;
+    static void setSamples(const std::shared_ptr<Shader>& sampledShader);
 private:
     unsigned int FBO;
     unsigned int DepthMap; // 深度图

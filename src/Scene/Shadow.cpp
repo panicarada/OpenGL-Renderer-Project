@@ -8,7 +8,7 @@ const unsigned int ShadowWidth =  (WINDOW_WIDTH << 1);
 const unsigned int ShadowHeight = (WINDOW_WIDTH << 1);
 
 Shadow::Shadow(const std::shared_ptr<Shader> &shader)
-    : m_Shader(shader)
+        : m_Shader(shader)
 {
     // 生成一个frame buffer
     glGenFramebuffers(1, &FBO);
@@ -47,7 +47,7 @@ Shadow::Shadow(const std::shared_ptr<Shader> &shader)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Shadow::renderShadow(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
+void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
                           const std::set<std::shared_ptr<Light>> &LightSet)
 {
     auto LightProjection = glm::perspective(glm::radians(90.0f), WINDOW_RATIO, ZNEAR, ZFAR);
@@ -113,7 +113,7 @@ void Shadow::renderShadow(const std::set<std::shared_ptr<Geometry>> &GeometrySet
 }
 
 // 为被采样的shader设置uniform量，用于阴影滤波的采样
-void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader) const
+void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
 {
     const int sampleRange = 1; // 总采样数目是(2 * sampleRange + 1)^3
     float ImportanceSum = 0;

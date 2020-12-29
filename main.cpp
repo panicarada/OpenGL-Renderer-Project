@@ -12,6 +12,7 @@
 #include "Tests/TestCylinder.h"
 #include "Tests/TestGeometry.h"
 #include "Tests/TestDepth.h"
+#include "Tests/TestShadowPCSS.h"
 
 #include "TestShadow.h"
 
@@ -140,6 +141,8 @@ int main()
     testMenu->RegisterTest<test::TestGeometry>("Geometry");
     testMenu->RegisterTest<test::TestDepth>("Depth");
     testMenu->RegisterTest<test::TestShadow>("Shadow");
+    testMenu->RegisterTest<test::TestShadowPCSS>("PCSS");
+
 
 
     Renderer renderer;

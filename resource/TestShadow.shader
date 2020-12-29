@@ -63,6 +63,8 @@ uniform samplerCube u_DepthMap;
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
 uniform float u_zFar;
 
+
+
 // A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm.
 uint hash( uint x ) {
 	x += ( x << 10u );
@@ -189,6 +191,6 @@ void main()
 	vec4 Color = v_Color;
 	// 计算阴影
 	float Shadow = calculateShadow(v_FragPosition);
-
+//	float Shadow = 0.0f;
 	FragColor = (u_Ambient + (Diffuse + Specular) * (1.0 - Shadow)) * v_Color;
 }

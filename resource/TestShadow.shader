@@ -114,7 +114,7 @@ float calculateShadow(vec3 FragPosition)
 	float Shadow = 0.0;
 	float Bias = 0.12;
 	float ViewDistance = length(u_CameraPosition - FragPosition);
-	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) / 200.0;
+	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) / 100.0;
 	vec3 Noise = vec3((random(FragToLight.x) - 0.5) * 0.3);
 	// 把for循环展开一点，可以加速
 	for(int i = 0; i < SampleNum; i += 3)

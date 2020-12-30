@@ -19,6 +19,10 @@ public:
     {
         return SoftShadowMap;
     }
+    void applyFilter(const std::shared_ptr<Shader>& Filter)
+    {
+        
+    }
 private:
     unsigned int FBO;
     unsigned int SoftShadowMap;

@@ -108,8 +108,8 @@ float calBlockerAvgDistance(float LightSize, vec3 LightToFrag, float Bias)
 			BlockerDistSum += SampleDepth / u_zFar; // 深度要归一化到[0, 1]
 		}
 	}
-	if (BlockerNum > 0) return BlockerDistSum / BlockerNum;
-	return -1;  // 表示没有blocker，Fragment被光线直射
+	if (BlockerNum == u_BlockerSampleNum) return -1.0; // 完全被遮挡
+	else return BlockerDistSum / BlockerNum;
 }
 
 // 计算半影的宽度，用于之后的PCF采样
@@ -118,10 +118,10 @@ float calBlockerAvgDistance(float LightSize, vec3 LightToFrag, float Bias)
 //    LightToFrag: Fragment相对于光的坐标
 float calPenumbraWidth(float LightSize, vec3 LightToFrag)
 {
-	float Bias = 0.12;
+	float Bias = 0.08;
 	float BlockerAvgDistance = calBlockerAvgDistance(LightSize, LightToFrag, Bias);
 
-	if (BlockerAvgDistance < 0) return -1.0f; // 毫无疑问没有遮挡，不需要PCF采样
+	if (BlockerAvgDistance < 0) return -1.0f; // 被完全遮挡，不需要PCF采样
 
 	// 半影宽度计算公式，由nvidia文章给出
 	float PenumbraWidth = (length(LightToFrag) - BlockerAvgDistance) * LightSize / BlockerAvgDistance;
@@ -136,19 +136,25 @@ float calPenumbraWidth(float LightSize, vec3 LightToFrag)
 uniform int u_PCFSampleNum; // PCF采样点的数目
 float calSoftShadow(float LightSize, vec3 LightToFrag)
 {
-	const float Factor = 1.5f;
+	float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag).r;
+	float CurrentDepth = length(LightToFrag);
+//	const float Bias = 0.02;
+	if (CurrentDepth <= ClosetDepth + 0.008)
+	{ // 被光直射
+		return 0.0f;
+	}
+	const float Factor = 5.0f;
 	float PCFWidth = calPenumbraWidth(LightSize, LightToFrag) * Factor;
 	float Sum = 0.0;
 	float Bias = 0.12;
-	float CurrentDepth = length(LightToFrag);
 	if (PCFWidth <= 0.0f)
-	{ // 毫无疑问没有遮挡
-		return 0.0f;
+	{ // 被完全遮挡
+		return 1.0f;
 	}
 
 	for (int i = 0;i < u_PCFSampleNum; ++i)
 	{ // 常规的PCF流程
-		float ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
+		ClosetDepth = u_zFar * texture(u_DepthMap, LightToFrag + PCFWidth * genRandDirection(i / float(u_PCFSampleNum))).r;
 		Sum += (ClosetDepth + Bias < CurrentDepth) ? 1.0 : 0.0;
 	}
 	return Sum / u_PCFSampleNum;

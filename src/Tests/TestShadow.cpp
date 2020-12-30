@@ -87,6 +87,10 @@ test::TestShadow::TestShadow()
     m_GeometrySet.insert(Floor);
     m_GeometrySet.insert(cube);
 
+    auto sphere = std::make_shared<Sphere>(m_Camera, m_Shader);
+    sphere->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
+    m_GeometrySet.insert(sphere);
+
     // 光源
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
     selectedLight = std::make_shared<Light>(m_Shader);

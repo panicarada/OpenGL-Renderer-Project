@@ -57,7 +57,7 @@ void main()
 
     float dx = dFdx(Depth);
     float dy = dFdy(Depth);
-    Moments += vec2(0.0, 0.25 * (dx * dx + dy * dy)); // 解决acne问题
+    Moments += 0.25 * (dx * dx + dy * dy); // 解决acne问题
 
     FragColor = Moments;
 }

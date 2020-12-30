@@ -111,12 +111,12 @@ test::TestShadowPCSS::TestShadowPCSS()
 
     // 设置光源大小
     m_Shader->bind();
-    m_Shader->setUniform1f("u_Lights[0].LightSize", 0.0003f);
+    m_Shader->setUniform1f("u_Lights[0].LightSize", 0.03f);
 
     // 设置Random Map
 
-    m_Shader->setUniform1i("u_BlockerSampleNum", 16);
-    m_Shader->setUniform1i( "u_PCFSampleNum", 55);
+    m_Shader->setUniform1i("u_BlockerSampleNum", 32);
+    m_Shader->setUniform1i( "u_PCFSampleNum", 32);
     m_Shader->setUniform1i("u_RandomMap", 1); // 随机图是TEXTURE1
 
     m_RandomMap = std::make_shared<PoissonMap>();

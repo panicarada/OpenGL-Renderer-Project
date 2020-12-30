@@ -66,6 +66,10 @@ uniform samplerCube u_VSMShadowMap;
 
 
 
+float LinearStep(float Low, float High, float Value)
+{
+	return min(max((Value - Low)/(High - Low), 0.0), 1.0);
+}
 
 float calVSM_Shadow(vec3 LightToFrag)
 {
@@ -80,10 +84,14 @@ float calVSM_Shadow(vec3 LightToFrag)
 	// How likely this pixel is to be lit (p_max)
 	float Variance = Moments.y - (Moments.x * Moments.x);
 	Variance = u_zFar * max(Variance, 0.0002); // 避免为0
+	float p = step(d, Moments.x);
 
 	float d_minus_mean = d - Moments.x;
-	float p_max = Variance / (Variance + d_minus_mean * d_minus_mean);
-	return p_max;
+	float pMax = LinearStep(0.2, 1.0, Variance / (Variance + d_minus_mean * d_minus_mean));
+//	float p_max = Variance / (Variance + d_minus_mean * d_minus_mean);
+
+//	return p_max;
+	return min(max(p, pMax), 1.0);
 }
 
 void main()

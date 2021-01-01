@@ -401,4 +401,6 @@ test::Scene::Scene()
     m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
 
     std::cout << Basic::getConstant("Scene", "MAX_SAMPLE_NUM") << std::endl;
+
+    Geometry::exportObj("test.obj", m_GeometrySet);
 }

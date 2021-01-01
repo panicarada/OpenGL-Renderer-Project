@@ -38,8 +38,8 @@ void ObjLoader::loadOBJ(const std::string &FileName)
 
 
     // Indices，声明绘制三角形的方式
-    std::vector<unsigned int> Indices;
-
+//    std::vector<unsigned int> Indices;
+    m_Indices.clear();
     // 每次读取一行
     while (std::getline(inFile, Line))
     {
@@ -106,37 +106,37 @@ void ObjLoader::loadOBJ(const std::string &FileName)
                 }
             }
             // 读完了一行所有的顶点，现在将其三角化
-            triangulate(Points, Indices);
+            triangulate(Points, m_Indices);
         }
     }
 
     // Vertex Array
-    std::vector<Vertex> Vertices(PositionIndices.size());
+    m_Vertices.resize(PositionIndices.size());
 
     bool m_hasTexture = (TexIndices.size() == PositionIndices.size()); // 是否具有纹理坐标
-    for (int i = 0;i < Vertices.size(); ++i)
+    for (int i = 0;i < m_Vertices.size(); ++i)
     {
         // Obj文件从1开始计数，所以要-1
-        Vertices[i].Position = Positions[PositionIndices[i] - 1];
+        m_Vertices[i].Position = Positions[PositionIndices[i] - 1];
         if (m_hasTexture)
         {
-            Vertices[i].TexCoord = TexCoords[TexIndices[i] - 1];
+            m_Vertices[i].TexCoord = TexCoords[TexIndices[i] - 1];
         }
         else
         {
-            Vertices[i].TexCoord = glm::vec2(0.0f);
+            m_Vertices[i].TexCoord = glm::vec2(0.0f);
         }
-        Vertices[i].Normal = Normals[NormalIndices[i] - 1];
-        Vertices[i].Color = glm::vec4(1.0f);
+        m_Vertices[i].Normal = Normals[NormalIndices[i] - 1];
+        m_Vertices[i].Color = glm::vec4(1.0f);
     }
 
     // DEBUG
-    std::cout << "Number of Vertices: " << Vertices.size() << std::endl;
+    std::cout << "Number of Vertices: " << m_Vertices.size() << std::endl;
     std::cout << "Load Obj successfully!" << std::endl;
 
     // Buffer分配空间
-    m_VertexBuffer = std::make_unique<VertexBuffer>(&Vertices[0], Vertices.size() * sizeof(Vertex), true);
-    m_IndexBuffer = std::make_unique<IndexBuffer>( &Indices[0], Indices.size(), true);
+    m_VertexBuffer = std::make_unique<VertexBuffer>(&m_Vertices[0], m_Vertices.size() * sizeof(Vertex), true);
+    m_IndexBuffer = std::make_unique<IndexBuffer>( &m_Indices[0], m_Indices.size(), true);
     // 绑定VAO
 //    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, Indices.size() * sizeof(unsigned int), &Indices[0]);
 //    glBufferSubData(GL_ARRAY_BUFFER, 0, Vertices.size() * sizeof(Vertex), &Vertices[0]); // No allocation, only send data

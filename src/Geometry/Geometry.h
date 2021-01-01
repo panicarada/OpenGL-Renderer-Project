@@ -21,9 +21,56 @@
 #include "glm/gtc/type_ptr.hpp"
 
 
+#include <fstream>
+
 class Geometry
 {
 public:
+    inline static void exportObj(const std::string& OutFile, const std::set<std::shared_ptr<Geometry>>& GeometrySet)
+    {
+        std::string Extension = OutFile.substr(OutFile.find_last_of('.'));
+        if (Extension != ".obj")
+        { // 只支持obj文件
+            std::cout << "The type of the file '" << OutFile << "' is not supported yet!" << std::endl;
+            return ;
+        }
+        // 以写方式打开文件
+        std::ofstream Out("../Export/" + OutFile);
+        if (!Out.is_open())
+        { // 打开文件失败
+            std::cout << "Fail to write to the file '" << OutFile << "'" << std::endl;
+            return ;
+        }
+
+        int Offset = 1; // 多个几何物体都写入该文件，索引号会叠加上去
+        // 因为obj索引从1开始计数，所以初始化为1
+
+        for (auto geometry : GeometrySet)
+        {
+            for (auto vertex : geometry->m_Vertices)
+            { // 写入Vertices
+                // 坐标
+                Out << "v " << vertex.Position[0] << " " << vertex.Position[1] << " " << vertex.Position[2] << std::endl;
+                // 纹理坐标
+                Out << "vt " << vertex.TexCoord[0] << " " << vertex.TexCoord[1] << std::endl;
+                // 法向量
+                Out << "vn " << vertex.Normal[0] << " " << vertex.Normal[1] << " " << vertex.Normal[2] << std::endl;
+            }
+
+            // 这样一来，v、vt、vn的索引都是一样的，写入face三个分量都是重复的
+            // 每行只写一个三角形
+            for (int i = 0;i < geometry->m_Indices.size(); i += 3)
+            {
+                Out << "f " << geometry->m_Indices[i]+Offset << "/" << geometry->m_Indices[i]+Offset<< "/" << geometry->m_Indices[i]+Offset << " ";
+                Out << geometry->m_Indices[i+1]+Offset << "/" << geometry->m_Indices[i+1]+Offset<< "/" << geometry->m_Indices[i+1]+Offset << " ";
+                Out << geometry->m_Indices[i+2]+Offset << "/" << geometry->m_Indices[i+2]+Offset<< "/" << geometry->m_Indices[i+2]+Offset << std::endl;
+            }
+            Offset += geometry->m_Vertices.size();
+        }
+
+        Out.close();
+    }
+
     inline void detachTexture(const std::shared_ptr<TextureArray>& TA)
     { // 取消纹理的绑定
         TA->eraseTexture(m_TextureSlot);
@@ -93,6 +140,10 @@ protected:
     std::unique_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
     std::unique_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
     std::unique_ptr<VertexBufferLayout> m_Layout;
+    // 为了导出obj文件，还是要把Vertices和Indices存起来
+    std::vector<Vertex> m_Vertices;
+    std::vector<unsigned int> m_Indices;
+
     std::shared_ptr<Camera> m_Camera;
 public:
     std::shared_ptr<Shader> m_Shader;

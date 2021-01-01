@@ -12,8 +12,6 @@ include_directories(${HEADERS})
 set(GLFW_LINK /usr/local/Cellar/glfw/3.3.2/lib/libglfw.3.3.dylib)
 set(GLEW_LINK /usr/local/Cellar/glew/2.2.0/lib/libGLEW.2.2.0.dylib)
 
-set(ASSIMP_LINK /usr/local/Cellar/libassimp.3.1.1.dylib)
-
 
 set(FRAMEWORKS_1 /System/Library/Frameworks/Cocoa.framework)
 set(FRAMEWORKS_2 /System/Library/Frameworks/OpenGL.framework)
@@ -58,6 +56,5 @@ add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src
         src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp
         src/Scene/SoftShadow.h src/Tests/TestShadowVSM.cpp
         src/Tests/TestShadowVSM.h
-#        src/Geometry/Model.cpp src/Geometry/Model.h
         src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp)
-target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX ${ASSIMP_LINK})
+target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX)

@@ -95,7 +95,7 @@ test::TestShadow::TestShadow()
 
     // Obj
     auto m_ObjLoader = std::make_shared<ObjLoader>(m_Camera, m_Shader);
-    m_ObjLoader->loadOBJ("../resource/Obj/RubixCube.obj", false);
+    m_ObjLoader->loadOBJ("../resource/Obj/chair.obj");
 //    m_ObjLoader->loadOBJ("../resource/Obj/Vases.obj", false);
     m_ObjLoader->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
     m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};

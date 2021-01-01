@@ -34,7 +34,6 @@ test::Test* currentTest = nullptr;
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
 
-
 int main()
 {
     // 设置并行数目

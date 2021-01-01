@@ -14,7 +14,7 @@ ObjLoader::ObjLoader(const std::shared_ptr<Camera> &Camera, const std::shared_pt
     m_Layout->Push<float>(2); // 纹理坐标
 }
 
-void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
+void ObjLoader::loadOBJ(const std::string &FileName)
 {
     std::stringstream ss;
     std::ifstream inFile(FileName);
@@ -36,6 +36,9 @@ void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
     std::vector<unsigned int> TexIndices;
     std::vector<unsigned int> NormalIndices;
 
+
+    // Indices，声明绘制三角形的方式
+    std::vector<unsigned int> Indices;
 
     // 每次读取一行
     while (std::getline(inFile, Line))
@@ -68,10 +71,12 @@ void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
         {
             int Counter = 0; // 0: Position, 1: TexCoord, 2: Normal
             unsigned int Index;
+            std::vector<unsigned int> Points;
             while (ss >> Index)
             {
                 if (Counter == 0)
                 {
+                    Points.push_back(PositionIndices.size());
                     PositionIndices.push_back(Index);
                 }
                 else if (Counter == 1)
@@ -82,7 +87,6 @@ void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
                 {
                     NormalIndices.push_back(Index);
                 }
-
                 int ignoreCount = 1;
                 while (ss.peek() == '/')
                 { // 有些obj没有材质，所以会连着两个'/'
@@ -101,13 +105,13 @@ void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
                     Counter = 0;
                 }
             }
+            // 读完了一行所有的顶点，现在将其三角化
+            triangulate(Points, Indices);
         }
     }
 
     // Vertex Array
     std::vector<Vertex> Vertices(PositionIndices.size());
-    // Indices
-    std::vector<unsigned int> Indices;
 
     bool m_hasTexture = (TexIndices.size() == PositionIndices.size()); // 是否具有纹理坐标
     for (int i = 0;i < Vertices.size(); ++i)
@@ -124,30 +128,11 @@ void ObjLoader::loadOBJ(const std::string &FileName, bool isTriangle)
         }
         Vertices[i].Normal = Normals[NormalIndices[i] - 1];
         Vertices[i].Color = glm::vec4(1.0f);
-
-        if (isTriangle && i % 3 == 0)
-        {
-            Indices.push_back(i);
-            Indices.push_back(i+1);
-            Indices.push_back(i+2);
-        }
-        else if (!isTriangle && i % 4 == 0)
-        { // 一行face是一个quad
-            Indices.push_back(i);
-            Indices.push_back(i+2);
-            Indices.push_back(i+1);
-
-            Indices.push_back(i+2);
-            Indices.push_back(i);
-            Indices.push_back(i+3);
-        }
     }
 
     // DEBUG
     std::cout << "Number of Vertices: " << Vertices.size() << std::endl;
     std::cout << "Load Obj successfully!" << std::endl;
-
-
 
     // Buffer分配空间
     m_VertexBuffer = std::make_unique<VertexBuffer>(&Vertices[0], Vertices.size() * sizeof(Vertex), true);

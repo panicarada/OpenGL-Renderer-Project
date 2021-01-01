@@ -372,6 +372,15 @@ test::Scene::Scene()
     Floor->updateDrawData();
     Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
 
+    // Obj
+    auto m_ObjLoader = std::make_shared<ObjLoader>(m_Camera, m_Shader);
+    m_ObjLoader->loadOBJ("../resource/Obj/chair.obj");
+//    m_ObjLoader->loadOBJ("../resource/Obj/Vases.obj", false);
+    m_ObjLoader->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
+    m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};
+    m_GeometrySet.insert(m_ObjLoader);
+    selectedGeometry = m_ObjLoader;
+
     // 环境光
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
 

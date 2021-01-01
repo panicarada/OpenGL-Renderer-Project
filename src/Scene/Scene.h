@@ -28,8 +28,6 @@ namespace test
             return m_Camera;
         }
     private:
-        std::string m_ShaderFileName;
-
         // 几何物体
         std::set<std::shared_ptr<Geometry>> m_GeometrySet; // 几何物体的集合
         std::shared_ptr<Geometry> selectedGeometry; // 当前选中物体
@@ -58,7 +56,6 @@ namespace test
         std::string m_TextureName; // 用户输入的纹理名称
         std::string m_ObjName_Import; // 要导入的obj文件名称
         std::string m_ObjName_Export; // 要导出的obj文件名称
-
 
         std::shared_ptr<Shader> m_Shader; // 主shader
         std::shared_ptr<Camera> m_Camera; // 相机

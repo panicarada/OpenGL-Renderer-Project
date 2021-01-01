@@ -195,7 +195,12 @@ namespace Basic
     // 常量表，用来管理C++文件和shader文件公用的常量
     // 常量只需要定义在shader文件中，通过init()来抓取到C++中
     extern std::unordered_map<std::string, std::unordered_map<std::string, int>> ConstantMap;
+    // 文件名映射表（简称和路径）
+    extern std::unordered_map<std::string, std::string> AliasMap;
+
     void init();
+    std::string getFileName(const std::string& AliasFileName);
+
     // 每个文件都有一个常量表，要获得一个常量时，通过ConstantMap[文件名（Alias）][常量名]
-    int getConstant(const std::string& FileName, const std::string&& ConstantName);
+    int getConstant(const std::string& AliasFileName, const std::string&& ConstantName);
 }

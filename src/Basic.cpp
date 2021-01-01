@@ -7,22 +7,28 @@
 
 
 
+
 // 常量表，用来管理C++文件和shader文件公用的常量
 // 常量只需要定义在shader文件中，通过init()来抓取到C++中
 namespace Basic
 {
     std::unordered_map<std::string, std::unordered_map<std::string, int>> ConstantMap;
+    std::unordered_map<std::string, std::string> AliasMap;
+
+
+    std::string getFileName(const std::string& AliasFileName)
+    {
+        return AliasMap[AliasFileName];
+    }
+
     void init()
     {
-        std::vector<std::string> Files =
-                {
-                        "../resource/Scene/Scene.shader",
-                        "../resource/Scene/Shadow.shader"
-                };
+        AliasMap["Scene"] = "../resource/Scene/Scene.shader";
+        AliasMap["Shadow"] = "../resource/Scene/Shadow.shader";
 
-        for (auto FileName : Files)
+        for (auto Pair : AliasMap)
         { // 遍历每个文件
-            std::ifstream File(FileName); // 打开shader文件
+            std::ifstream File(Pair.second); // 打开shader文件
             std::string Line = "";
 
             while (std::getline(File, Line))
@@ -40,15 +46,15 @@ namespace Basic
                     ss >> Word; // 等号
                     int Value;
                     ss >> Value;
-                    ConstantMap[FileName][Name] = Value;
-                    std::cout << "In file '" << FileName << "', constant '" << Name << "' = " << Value << std::endl;
+                    ConstantMap[Pair.first][Name] = Value;
+                    std::cout << "In file '" << Pair.second << "', constant '" << Name << "' = " << Value << std::endl;
                 }
             }
             File.close();
         }
     }
-    int getConstant(const std::string& FileName, const std::string&& ConstantName)
+    int getConstant(const std::string& AliasFileName, const std::string&& ConstantName)
     {
-        return ConstantMap[FileName][ConstantName];
+        return ConstantMap[AliasFileName][ConstantName];
     }
 }

@@ -335,7 +335,7 @@ void test::Scene::OnImGuiRender()
         }
     }
 
-    if (ImGui::SliderInt("Shadow Sample Number", &u_SampleNum,0, Basic::getConstant(m_ShaderFileName, "MAX_SAMPLE_NUM")))
+    if (ImGui::SliderInt("Shadow Sample Number", &u_SampleNum,0, Basic::getConstant("Scene", "MAX_SAMPLE_NUM")))
     { // 更新阴影采样点数目
         m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
     }
@@ -358,8 +358,7 @@ test::Scene::Scene()
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
 
-    m_ShaderFileName = "../resource/Scene/Scene.shader";
-    m_Shader = std::make_shared<Shader>(m_ShaderFileName);
+    m_Shader = std::make_shared<Shader>(Basic::getFileName("Scene"));
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
 
@@ -388,9 +387,8 @@ test::Scene::Scene()
     m_TextureArray = std::make_shared<TextureArray>(m_Shader);
     m_Shader->setUniform1i("u_Textures", 0); // 纹理是Texture0
 
-
     // 阴影
-    auto ShadowShader = std::make_shared<Shader>("../resource/Scene/Shadow.shader");
+    auto ShadowShader = std::make_shared<Shader>(Basic::getFileName("Shadow"));
     m_Shader->setUniform1i("u_DepthMap", m_TextureArray->getImageNum()); // TEXTURE 0~ImageNum-1被纹理占用
     m_Shadow = std::make_shared<Shadow>(ShadowShader);
     m_Shadow->setSamples(m_Shader);
@@ -401,4 +399,6 @@ test::Scene::Scene()
     m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
     u_SampleArea = 0.001;
     m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
+
+    std::cout << Basic::getConstant("Scene", "MAX_SAMPLE_NUM") << std::endl;
 }

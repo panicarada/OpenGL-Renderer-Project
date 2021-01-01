@@ -86,13 +86,13 @@ uint hash( uvec4 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z) ^ hash(v.w) ); }
 
 
 
+const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
+const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
+
 // Construct a float with half-open range [0:1] using low 23 bits.
 // All zeroes yields 0.0, all ones yields the next smallest representable value below 1.0.
 float floatConstruct( uint m )
 {
-	const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
-	const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
-
 	m &= ieeeMantissa;                     // Keep only mantissa bits (fractional part)
 	m |= ieeeOne;                          // Add fractional part to 1.0
 
@@ -105,10 +105,12 @@ float random( float x ) { return floatConstruct(hash(floatBitsToUint(x)));}
 float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
 
 //const int SampleNum = 27;
-const int SampleNum = 9;
-uniform vec3 u_SampledPoints[SampleNum];
-uniform float u_SampleImportance[SampleNum];
-uniform float u_SampleImportanceSum;
+uniform int u_SampleNum;
+const int MAX_SAMPLE_NUM = 27;
+uniform vec3 u_SampledPoints[MAX_SAMPLE_NUM];
+uniform float u_SampleImportance[MAX_SAMPLE_NUM];
+//uniform float u_SampleImportanceSum;
+uniform float u_SampleArea; // 采样范围
 float calculateShadow(vec3 FragPosition)
 {
 	// Fragment到光线的向量
@@ -120,11 +122,17 @@ float calculateShadow(vec3 FragPosition)
 	float Bias = 0.12;
 	float ViewDistance = length(u_CameraPosition - FragPosition);
 
-	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) / 100.0;
+	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) * u_SampleArea;
 //	float DiskRadius = 1.0 / 100.0;
 	vec3 Noise = vec3((random(FragToLight.x) - 0.5) * 0.3);
 	// 把for循环展开一点，可以加速
-	for(int i = 0; i < SampleNum; i += 3)
+	float SampleImportanceSum = 0.0;
+	if (u_SampleNum == 0)
+	{ // 没有阴影
+		return 0.0;
+	}
+
+	for(int i = 0; i < u_SampleNum; i ++)
 	{
 		// 用FragToLight采样在光视角下该fragment对应位置最近的深度（理论上如果该点被光直射，则最近深度就是它自己的深度）
 		float ClosestDepth = texture(u_DepthMap, FragToLight + // 加上一个随机噪声
@@ -134,26 +142,10 @@ float calculateShadow(vec3 FragPosition)
 		{ // 如果它就是最近深度，则被阴影覆盖，因为有多个采样点，所以阴影值加权平均
 			Shadow += u_SampleImportance[i];
 		}
-
-		ClosestDepth = texture(u_DepthMap, FragToLight + // 加上一个随机噪声
-									(u_SampledPoints[i+1] + Noise) * DiskRadius).r;
-		ClosestDepth *= u_zFar;
-		if(CurrentDepth - Bias > ClosestDepth)
-		{
-			Shadow += u_SampleImportance[i+1];
-		}
-
-		ClosestDepth = texture(u_DepthMap, FragToLight + // 加上一个随机噪声
-									(u_SampledPoints[i+2] + Noise) * DiskRadius).r;
-		ClosestDepth *= u_zFar;
-		if(CurrentDepth - Bias > ClosestDepth)
-		{
-			Shadow += u_SampleImportance[i+2];
-		}
+		SampleImportanceSum += u_SampleImportance[i];
 	}
-
 	// 加权平均
-	Shadow /= u_SampleImportanceSum;
+	Shadow /= SampleImportanceSum;
 
 	return Shadow;
 }
@@ -200,12 +192,9 @@ void main()
 	if (u_TexIndex >= 0 && u_TexIndex < MAX_TEX_NUM)
 	{
 		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
-		return ;
 	}
-
 	// 计算阴影
 	float Shadow = calculateShadow(v_FragPosition);
-//	float Shadow = 0.0f;
 	FragColor = (u_Ambient * 0.5 * u_Material.Ambient
-				 + (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow)) * v_Color;
+				 + (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow)) * Color;
 }

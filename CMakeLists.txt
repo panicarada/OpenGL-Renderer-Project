@@ -59,5 +59,5 @@ add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src
         src/Scene/SoftShadow.h src/Tests/TestShadowVSM.cpp
         src/Tests/TestShadowVSM.h
 #        src/Geometry/Model.cpp src/Geometry/Model.h
-        src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h)
+        src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp)
 target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX ${ASSIMP_LINK})

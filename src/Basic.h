@@ -15,6 +15,10 @@
 #include <functional>
 
 
+#include <unordered_map>
+#include <fstream>
+#include <sstream>
+
 
 // shader代码中材质数组的大小
 #define SLOT_NUM 15
@@ -182,3 +186,16 @@ struct Vertex
     glm::vec4 Color;
     glm::vec2 TexCoord;
 };
+
+
+
+
+namespace Basic
+{
+    // 常量表，用来管理C++文件和shader文件公用的常量
+    // 常量只需要定义在shader文件中，通过init()来抓取到C++中
+    extern std::unordered_map<std::string, std::unordered_map<std::string, int>> ConstantMap;
+    void init();
+    // 每个文件都有一个常量表，要获得一个常量时，通过ConstantMap[文件名（Alias）][常量名]
+    int getConstant(const std::string& FileName, const std::string&& ConstantName);
+}

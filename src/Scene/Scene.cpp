@@ -31,6 +31,10 @@ void test::Scene::OnRender()
     glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum());
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
 
+    // 启用材质
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, m_TextureArray->getRendererID());
+
     m_Shader->bind();
     m_Shader->setUniform1f("u_zNear", ZNEAR);
     m_Shader->setUniform1f("u_zFar", ZFAR);
@@ -331,6 +335,15 @@ void test::Scene::OnImGuiRender()
         }
     }
 
+    if (ImGui::SliderInt("Shadow Sample Number", &u_SampleNum,0, Basic::getConstant(m_ShaderFileName, "MAX_SAMPLE_NUM")))
+    { // 更新阴影采样点数目
+        m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
+    }
+    if (ImGui::SliderFloat("Shadow Sample Area", &u_SampleArea, 0.0f, 2.0f))
+    {
+        m_Shader->setUniform1f("u_SampleArea", u_SampleArea / 100.0f);
+    }
+
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     if (updateShadow)
@@ -345,7 +358,8 @@ test::Scene::Scene()
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
 
-    m_Shader = std::make_shared<Shader>("../resource/Scene/Scene.shader");
+    m_ShaderFileName = "../resource/Scene/Scene.shader";
+    m_Shader = std::make_shared<Shader>(m_ShaderFileName);
     m_Shader->bind();
     m_Camera = std::make_shared<Camera>();
 
@@ -372,4 +386,10 @@ test::Scene::Scene()
     m_Shadow = std::make_shared<Shadow>(ShadowShader);
     m_Shadow->setSamples(m_Shader);
     m_Shadow->render(m_GeometrySet, m_LightSet);
+    // 初始采样点数目
+    u_SampleNum = 10;
+    m_Shader->bind();
+    m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
+    u_SampleArea = 0.001;
+    m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
 }

@@ -28,6 +28,8 @@ namespace test
             return m_Camera;
         }
     private:
+        std::string m_ShaderFileName;
+
         // 几何物体
         std::set<std::shared_ptr<Geometry>> m_GeometrySet; // 几何物体的集合
         std::shared_ptr<Geometry> selectedGeometry; // 当前选中物体
@@ -49,6 +51,7 @@ namespace test
         std::shared_ptr<Shadow> m_Shadow;
         int u_SampleNum; // 阴影使用的采样点数目
         bool updateShadow; // 是否要更新阴影
+        float u_SampleArea; // 采样的范围
 
 
         // GUI输入

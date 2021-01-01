@@ -146,5 +146,5 @@ void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
         }
     }
 //    std::cout << ImportanceSum << std::endl;
-    sampledShader->setUniform1f("u_SampleImportanceSum", ImportanceSum);
+//    sampledShader->setUniform1f("u_SampleImportanceSum", ImportanceSum);
 }

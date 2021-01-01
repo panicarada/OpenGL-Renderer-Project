@@ -13,7 +13,7 @@ TextureArray::TextureArray(std::shared_ptr<Shader> &shader, int ImageNum, int Wi
     { // 初始化编号池
         availableSlots.insert(i);
     }
-
+//    glActiveTexture(GL_TEXTURE0);
     DebugCall(glGenTextures(1, &m_RendererID)); // 获取一个buffer位置
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_RendererID); // 绑定纹理
     //设置如何从数据缓冲区去读取图像数据
@@ -66,7 +66,6 @@ int TextureArray::addTexture(const std::string& path)
 
 bool TextureArray::eraseTexture(int SlotID)
 {
-
     if (SlotID >= 0 && SlotID < m_ImageNum)
     { // 编号重新生效
         availableSlots.insert(SlotID);

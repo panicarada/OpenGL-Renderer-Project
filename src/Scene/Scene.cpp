@@ -20,6 +20,7 @@ void test::Scene::OnRender()
 //    m_Shadow->setSamples(m_Shader);
     if (updateShadow)
     {
+        m_Shadow->setSamples(m_Shader);
         m_Shadow->render(m_GeometrySet, m_LightSet);
     }
 
@@ -29,6 +30,7 @@ void test::Scene::OnRender()
     // 启用深度图
     glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum());
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
+
     m_Shader->bind();
     m_Shader->setUniform1f("u_zNear", ZNEAR);
     m_Shader->setUniform1f("u_zFar", ZFAR);
@@ -306,6 +308,29 @@ void test::Scene::OnImGuiRender()
     {
         std::cout << "Hello" << std::endl;
     }
+    if (ImGui::Button("Load Texture"))
+    {
+        if (selectedGeometry)
+        { // 尝试更换纹理
+            if (m_TextureName == ".detach")
+            { // 删除材质
+                selectedGeometry->detachTexture(m_TextureArray);
+            }
+            else if (std::ifstream("../resource/Textures/" + m_TextureName))
+            { // 检查文件是否存在
+                if (selectedGeometry->m_TextureSlot > 0)
+                {
+                    m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
+                }
+                std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName)) << std::endl;
+            }
+            else
+            {
+                std::cout << "The file: '" << m_TextureName << "' is not available!" << std::endl;
+            }
+        }
+    }
+
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     if (updateShadow)
@@ -338,6 +363,7 @@ test::Scene::Scene()
 
     // 纹理
     m_TextureArray = std::make_shared<TextureArray>(m_Shader);
+    m_Shader->setUniform1i("u_Textures", 0); // 纹理是Texture0
 
 
     // 阴影

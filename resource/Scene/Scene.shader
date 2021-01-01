@@ -52,15 +52,19 @@ struct Light
 const int MAX_LIGHT_NUM = 10; // 最大光源数目
 uniform Light u_Lights[MAX_LIGHT_NUM]; // 光源集合
 // uniform int u_LightsNum; // 光源数目
-
 uniform vec4 u_Ambient; // 环境光
+
 uniform vec3 u_CameraPosition; // 相机位置
 
+
 uniform int u_TexIndex; // 使用的纹理下标
+uniform sampler2DArray u_Textures; // 纹理数组
+const int MAX_TEX_NUM = 15; // 最多的纹理数
 
 uniform samplerCube u_DepthMap;
 
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
+
 uniform float u_zFar;
 
 
@@ -192,8 +196,16 @@ void main()
 	}
 
 	vec4 Color = v_Color;
+	// 如果有纹理
+	if (u_TexIndex >= 0 && u_TexIndex < MAX_TEX_NUM)
+	{
+		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
+		return ;
+	}
+
 	// 计算阴影
 	float Shadow = calculateShadow(v_FragPosition);
 //	float Shadow = 0.0f;
-	FragColor = (u_Ambient + (Diffuse + Specular) * (1.0 - Shadow)) * v_Color;
+	FragColor = (u_Ambient * 0.5 * u_Material.Ambient
+				 + (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow)) * v_Color;
 }

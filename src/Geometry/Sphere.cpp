@@ -24,7 +24,6 @@ void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)
     m_VerticalSteps = VerticalSteps;
     m_HorizontalSteps = HorizontalSteps;
 
-
     // 重新计算球面上的点，并放入buffer中
 //    std::vector<Vertex> Vertices;
     // 改为并行

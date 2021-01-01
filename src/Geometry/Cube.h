@@ -23,13 +23,7 @@ public:
         return "Geometry::Cube";
     }
 private:
-    struct Vertex
-    {
-        glm::vec3 Position;
-        glm::vec3 Normal;
-        glm::vec4 Color;
-        glm::vec2 TexCoord;
-    };
+
     inline std::vector<Vertex> getSquare(const glm::vec3 Normal)
     {
         // 随机数

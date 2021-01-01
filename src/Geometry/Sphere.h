@@ -30,11 +30,4 @@ public:
 private:
     int m_VerticalSteps;
     int m_HorizontalSteps;
-    struct Vertex
-    {
-        glm::vec3 Position;
-        glm::vec3 Normal;
-        glm::vec4 Color;
-        glm::vec2 TexCoord;
-    };
 };

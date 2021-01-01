@@ -173,3 +173,12 @@ namespace ImGui
         return InputText(label, (char*)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
     }
 }
+
+
+struct Vertex
+{
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec4 Color;
+    glm::vec2 TexCoord;
+};

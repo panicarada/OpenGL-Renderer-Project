@@ -100,7 +100,8 @@ float floatConstruct( uint m )
 float random( float x ) { return floatConstruct(hash(floatBitsToUint(x)));}
 float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
 
-const int SampleNum = 27;
+//const int SampleNum = 27;
+const int SampleNum = 9;
 uniform vec3 u_SampledPoints[SampleNum];
 uniform float u_SampleImportance[SampleNum];
 uniform float u_SampleImportanceSum;
@@ -114,7 +115,9 @@ float calculateShadow(vec3 FragPosition)
 	float Shadow = 0.0;
 	float Bias = 0.12;
 	float ViewDistance = length(u_CameraPosition - FragPosition);
+
 	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) / 100.0;
+//	float DiskRadius = 1.0 / 100.0;
 	vec3 Noise = vec3((random(FragToLight.x) - 0.5) * 0.3);
 	// 把for循环展开一点，可以加速
 	for(int i = 0; i < SampleNum; i += 3)
@@ -165,7 +168,7 @@ void main()
 	vec4 Specular = vec4(0.0f);
 	vec3 ViewDirection = normalize(u_CameraPosition - v_FragPosition);
 	// 为了提速，Diffuse和Specular放到一个for循环
-	for (int i = 0;i < 1; ++i)
+	for (int i = 0;i < MAX_LIGHT_NUM; ++i)
 	{
 		if (u_Lights[i].isOpen != 0)
 		{

@@ -39,7 +39,6 @@ Cube::Cube(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader> 
 
 void Cube::updateDrawData()
 {
-
     // 随机数
     std::random_device rd;
     std::mt19937 gen(rd());

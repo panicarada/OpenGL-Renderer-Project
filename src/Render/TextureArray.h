@@ -26,6 +26,10 @@ public:
 
     int addTexture(const std::string& path);
     bool eraseTexture(int SlotID);
+    inline int getImageNum() const
+    {
+        return m_ImageNum;
+    }
 
     ~TextureArray()
     {

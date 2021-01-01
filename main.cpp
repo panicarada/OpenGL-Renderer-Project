@@ -15,6 +15,8 @@
 #include "Tests/TestShadowPCSS.h"
 #include "Tests/TestShadowVSM.h"
 
+#include "Scene.h"
+
 #include "TestShadow.h"
 
 
@@ -144,6 +146,8 @@ int main()
     testMenu->RegisterTest<test::TestShadow>("Shadow");
     testMenu->RegisterTest<test::TestShadowPCSS>("PCSS");
     testMenu->RegisterTest<test::TestShadowVSM>("VSM");
+    testMenu->RegisterTest<test::Scene>("Scene");
+
 
 
 

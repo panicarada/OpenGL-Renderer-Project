@@ -66,7 +66,7 @@ test::TestShadow::TestShadow()
 {
     // 开启深度测试
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
 
 
     m_Shader = std::make_shared<Shader>("../resource/TestShadow.shader");
@@ -87,9 +87,19 @@ test::TestShadow::TestShadow()
     m_GeometrySet.insert(Floor);
     m_GeometrySet.insert(cube);
 
-    auto sphere = std::make_shared<Sphere>(m_Camera, m_Shader);
-    sphere->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
-    m_GeometrySet.insert(sphere);
+    // 球体
+//    auto sphere = std::make_shared<Sphere>(m_Camera, m_Shader);
+//    sphere->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
+//    m_GeometrySet.insert(sphere);
+
+
+    // Obj
+    auto m_ObjLoader = std::make_shared<ObjLoader>(m_Camera, m_Shader);
+    m_ObjLoader->loadOBJ("../resource/Obj/RubixCube.obj", false);
+//    m_ObjLoader->loadOBJ("../resource/Obj/Vases.obj", false);
+    m_ObjLoader->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
+    m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};
+    m_GeometrySet.insert(m_ObjLoader);
 
     // 光源
     m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);

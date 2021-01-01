@@ -8,6 +8,7 @@
 #include "Geometry.h"
 #include "Light.h"
 #include "Shadow.h"
+#include "ObjLoader.h"
 #include <set>
 
 namespace test

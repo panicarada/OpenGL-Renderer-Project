@@ -44,6 +44,7 @@ public:
         m_Shader->setUniform4f("u_Material.Diffuse", m_Material.Diffuse);
         m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
         m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
+
         if (m_TextureSlot >= 0)
         { // 如果有纹理，就设置纹理
             m_Shader->setUniform1i("u_TexIndex", m_TextureSlot);

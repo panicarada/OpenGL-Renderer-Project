@@ -7,7 +7,7 @@
 #include "Basic.h"
 #include "Shader.h"
 #include <set>
-#include "stb_image.h" // 读取图片
+#include "stb_image/stb_image.h" // 读取图片
 
 
 class TextureArray

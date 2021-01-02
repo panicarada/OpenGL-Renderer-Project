@@ -203,4 +203,6 @@ namespace Basic
 
     // 每个文件都有一个常量表，要获得一个常量时，通过ConstantMap[文件名（Alias）][常量名]
     int getConstant(const std::string& AliasFileName, const std::string&& ConstantName);
+
+    int exportImage(const std::string& Filename);
 }

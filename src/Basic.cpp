@@ -5,6 +5,10 @@
 #include "Basic.h"
 
 
+#include "stb_image/stb_image.h"
+#include "stb_image_write.h"// 写入图片
+#include <array>
+
 
 
 
@@ -56,5 +60,33 @@ namespace Basic
     int getConstant(const std::string& AliasFileName, const std::string&& ConstantName)
     {
         return ConstantMap[AliasFileName][ConstantName];
+    }
+
+    int exportImage(const std::string& Filename)
+    {
+        const int ChannelNum = 3; // RGB
+
+        int Viewport[4];
+        glGetIntegerv(GL_VIEWPORT, Viewport);
+
+        int x = Viewport[0];
+        int y = Viewport[1];
+        int Width = Viewport[2];
+        int Height = Viewport[3];
+
+        std::vector<unsigned char> Data(Width * Height * ChannelNum);
+        // 读取frame buffer像素值
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glReadPixels(x, y, Width, Height, GL_RGB, GL_UNSIGNED_BYTE, &Data[0]);
+
+        // 利用stbi image写入png文件
+        std::string Output = "../Export/Screenshots/" + Filename;
+        // image的左上角是(0, 0)，而OpenGL左下角是(0, 0)
+        // 所以要上下翻转
+        stbi_flip_vertically_on_write(1);
+        // 写入png
+        int res = stbi_write_png(Output.c_str(), Width, Height, ChannelNum, &Data[0], 0);
+        // 0表示写入失败，1表示写入成功
+        return res;
     }
 }

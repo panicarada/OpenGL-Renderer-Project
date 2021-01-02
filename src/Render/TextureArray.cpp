@@ -4,7 +4,7 @@
 
 
 #include "TextureArray.h"
-#include "stb_image_resize.h"
+#include "stb_image/stb_image_resize.h"
 
 TextureArray::TextureArray(std::shared_ptr<Shader> &shader, int ImageNum, int Width, int Height)
     : m_Shader(shader), m_Width(Width), m_Height(Height), m_ImageNum(ImageNum)

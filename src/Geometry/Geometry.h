@@ -26,6 +26,7 @@
 class Geometry
 {
 public:
+    // 导出obj文件
     inline static void exportObj(const std::string& OutFile, const std::set<std::shared_ptr<Geometry>>& GeometrySet)
     {
         std::string Extension = OutFile.substr(OutFile.find_last_of('.'));
@@ -35,7 +36,7 @@ public:
             return ;
         }
         // 以写方式打开文件
-        std::ofstream Out("../Export/" + OutFile);
+        std::ofstream Out("../Export/Objects/" + OutFile);
         if (!Out.is_open())
         { // 打开文件失败
             std::cout << "Fail to write to the file '" << OutFile << "'" << std::endl;
@@ -67,8 +68,8 @@ public:
             }
             Offset += geometry->m_Vertices.size();
         }
-
         Out.close();
+        std::cout << "Write file '" << OutFile << "' successfully!" << std::endl;
     }
 
     inline void detachTexture(const std::shared_ptr<TextureArray>& TA)
@@ -140,11 +141,11 @@ protected:
     std::unique_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
     std::unique_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
     std::unique_ptr<VertexBufferLayout> m_Layout;
-    // 为了导出obj文件，还是要把Vertices和Indices存起来
-    std::vector<Vertex> m_Vertices;
     std::vector<unsigned int> m_Indices;
 
     std::shared_ptr<Camera> m_Camera;
+// 为了导出obj文件，还是要把Vertices和Indices存起来
+std::vector<Vertex> m_Vertices;
 public:
     std::shared_ptr<Shader> m_Shader;
 

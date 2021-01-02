@@ -334,6 +334,10 @@ void test::Scene::OnImGuiRender()
             }
         }
     }
+    if (ImGui::Button("Take Screenshot"))
+    {
+        Basic::exportImage("test.png");
+    }
 
     if (ImGui::SliderInt("Shadow Sample Number", &u_SampleNum,0, Basic::getConstant("Scene", "MAX_SAMPLE_NUM")))
     { // 更新阴影采样点数目

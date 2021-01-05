@@ -10,6 +10,14 @@
 #include <array>
 
 
+#include "Geometry.h"
+#include "Sphere.h"
+#include "ObjLoader.h"
+#include "Cylinder.h"
+#include "Cube.h"
+#include "Camera.h"
+#include "Shader.h"
+
 
 
 // 常量表，用来管理C++文件和shader文件公用的常量
@@ -30,10 +38,10 @@ namespace Basic
         AliasMap["Scene"] = "../resource/Scene/Scene.shader";
         AliasMap["Shadow"] = "../resource/Scene/Shadow.shader";
 
-        for (auto Pair : AliasMap)
+        for (auto& Pair : AliasMap)
         { // 遍历每个文件
             std::ifstream File(Pair.second); // 打开shader文件
-            std::string Line = "";
+            std::string Line;
 
             while (std::getline(File, Line))
             { // 遍历每一行
@@ -56,6 +64,23 @@ namespace Basic
             }
             File.close();
         }
+
+        Geometry::ConstructorMap["Sphere"] = [](const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader>& shader)
+                -> std::shared_ptr<Geometry>{
+            return std::make_shared<Sphere>(camera, shader);
+        };
+        Geometry::ConstructorMap["ObjLoader"] = [](const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader>& shader)
+                -> std::shared_ptr<Geometry>{
+            return std::make_shared<ObjLoader>(camera, shader);
+        };
+        Geometry::ConstructorMap["Cylinder"] = [](const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader>& shader)
+                -> std::shared_ptr<Geometry>{
+            return std::make_shared<Cylinder>(camera, shader);
+        };
+        Geometry::ConstructorMap["Cube"] = [](const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader>& shader)
+                -> std::shared_ptr<Geometry>{
+            return std::make_shared<Cube>(camera, shader);
+        };
     }
     int getConstant(const std::string& AliasFileName, const std::string&& ConstantName)
     {
@@ -73,12 +98,10 @@ namespace Basic
         int y = Viewport[1];
         int Width = Viewport[2];
         int Height = Viewport[3];
-
         std::vector<unsigned char> Data(Width * Height * ChannelNum);
         // 读取frame buffer像素值
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glReadPixels(x, y, Width, Height, GL_RGB, GL_UNSIGNED_BYTE, &Data[0]);
-
         // 利用stbi image写入png文件
         std::string Output = "../Export/Screenshots/" + Filename;
         // image的左上角是(0, 0)，而OpenGL左下角是(0, 0)
@@ -88,5 +111,11 @@ namespace Basic
         int res = stbi_write_png(Output.c_str(), Width, Height, ChannelNum, &Data[0], 0);
         // 0表示写入失败，1表示写入成功
         return res;
+    }
+
+    void setFileName(const std::string &AliasFileName, const std::string &FileName)
+    {
+        // 设置文件映射表
+        AliasMap[AliasFileName] = FileName;
     }
 }

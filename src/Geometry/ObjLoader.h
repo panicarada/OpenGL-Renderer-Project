@@ -21,15 +21,13 @@ public:
            const Rotation& rotation = {0.0f, 0.0f, 0.0f},
            const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f});
 
-    // hasTexture：有些obj文件没有材质坐标
-    // isTriangle：表明每一行的face是不是一个triangle（或者是quad）
     void loadOBJ(const std::string& FileName);
-    void updateDrawData() override {} // 更新用于绘制的数据
-    inline std::string getClassName() override
+    void updateDrawData() override; // 更新用于绘制的数据
+    inline std::string getClassName() const override
     {
         return "Geometry::ObjLoader";
     }
-
+    std::string m_FileName = "NONE";
 private:
     inline static void triangulate(std::vector<unsigned int>& Points, std::vector<unsigned int>& OutputIndices)
     { // 把Points依次连线围成的多边形三角化，索引加到OutputIndices

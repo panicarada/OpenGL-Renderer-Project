@@ -9,6 +9,8 @@
 class Camera
 {
 public:
+    void save(std::ostream& Out) const;
+    void load(std::ifstream& In);
     Camera(const float& AngleOfView = 45.0f,
            const glm::mat4 &Projection = glm::perspective(glm::radians(45.0f), WINDOW_RATIO, ZNEAR, ZFAR),
            const glm::vec3 &Position = glm::vec3(0.0f, 0.0f, 0.0f),
@@ -44,11 +46,15 @@ public:
         return m_Direction;
     }
     void OnMouseAction(GLFWwindow* window, glm::vec2 Position);
-    void OnScrollAction(const double& Offset);
+    void OnKeyAction(GLFWwindow* window, int key, int scancode, int action, int mods); // 相机移动
+
+    void OnScrollAction(const glm::vec2&& Offset);
 private:
     void updateCameraVectors(); // 俯仰角或者偏航角改变后，更新相机向量
 public:
     bool isFPS;
+    bool isOrbit; // 是否是Orbit模式（只能绕着观察物体转圈和zoom）
+    glm::vec3 TargetPosition; // Orbit/Pan模式下，观察物体的坐标
 protected:
     std::string m_Tag; // 描述相机的标签（比如Orthogonal / Perspective）
 
@@ -67,6 +73,6 @@ protected:
     float m_Pitch; // 俯仰角，角度制，相当于绕InitRight的旋转角
     float m_Yaw; // 偏航角，角度制，相当于绕InitUp的旋转角
 
-    const float InitAngleOfView; // 原始的视角大小，用于Reset
+    float InitAngleOfView; // 原始的视角大小，用于Reset
     float m_AngleOfView; // 视角大小，角度制（透视投影中）
 };

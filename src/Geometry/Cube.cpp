@@ -7,21 +7,20 @@
 
 #include <random>
 
-Cube::Cube(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader> &shader,
+Cube::Cube(const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader> &shader,
            const glm::vec3 &position, const Material& material, const Rotation& rotation, const Scale& Scale)
-        : Geometry(Camera, shader, position, material, rotation, Scale)
+        : Geometry(camera, shader, position, material, rotation, Scale)
 {
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
     m_Layout->Push<float>(2); // 纹理坐标
-    init();
+    updateDrawData();
 }
 
-
-void Cube::init()
+void Cube::updateDrawData()
 {
-    // 随机数
+// 随机数
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(-0.1f, 0.2f);//uniform distribution between 0 and 1
@@ -65,3 +64,4 @@ void Cube::init()
     // 绑定VAO
     m_VAO->addBuffer(*m_VertexBuffer, *m_Layout);
 }
+

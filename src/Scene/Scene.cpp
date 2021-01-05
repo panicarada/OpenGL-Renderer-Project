@@ -8,6 +8,9 @@
 #include "Cylinder.h"
 #include <unordered_map>
 
+// 查看目录下的文件
+#include <filesystem>
+
 void test::Scene::OnUpdate(GLFWwindow *Window, float deltaTime)
 {
     m_Camera->OnKeyAction(Window, deltaTime);
@@ -22,11 +25,11 @@ void test::Scene::OnRender()
     {
         m_Shadow->setSamples(m_Shader);
         m_Shadow->render(m_GeometrySet, m_LightSet);
+        updateShadow = false;
     }
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // 启用深度图
     glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum());
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow->getDepthMap());
@@ -42,12 +45,16 @@ void test::Scene::OnRender()
     if (m_Camera)
     { // 输入相机位置
         auto Position = m_Camera->getPosition();
+        if (selectedGeometry)
+        { // 把相机观察目标设置为选中物体
+            m_Camera->TargetPosition = selectedGeometry->m_Position;
+        }
         m_Shader->setUniform3f("u_CameraPosition", Position.x, Position.y, Position.z);
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    for (auto geometry : m_GeometrySet)
+    for (auto& geometry : m_GeometrySet)
     {
         geometry->draw();
     }
@@ -56,8 +63,150 @@ void test::Scene::OnRender()
 
 void test::Scene::OnImGuiRender()
 {
-    updateShadow = false; // 是否需要更新阴影
+    GuiLight();
+    GuiShadow();
+    GuiGeometry();
+    GuiTexture();
+    GuiScene();
+    GuiObj();
 
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+}
+
+test::Scene::Scene()
+    : u_Ambient(0.2f, 0.2, 0.2f, 1.0f), u_SampleNum(10), u_SampleArea(0.001)
+{
+    init(Basic::getFileName("Scene"), Basic::getFileName("Shadow"));
+}
+
+void test::Scene::init(const std::string &ShaderFile, const std::string &ShadowFile)
+{
+    // 开启深度测试
+    glEnable(GL_DEPTH_TEST);
+    m_Shader = std::make_shared<Shader>(ShaderFile);
+    m_Shader->bind();
+    m_Camera = std::make_shared<Camera>();
+    selectedGeometry = nullptr;
+
+    // 地板
+    Floor = std::make_shared<Cube>(m_Camera, m_Shader);
+    Floor->m_Scale = {20.0f, 20.0f, 0.0001f, 20.0f};
+    Floor->m_Color = glm::vec4(0.18f, 0.6f, 0.96f, 1.0f);
+    Floor->updateDrawData();
+    Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
+
+    // 环境光
+    m_Shader->setUniform4f("u_Ambient", u_Ambient[0], u_Ambient[1], u_Ambient[2], u_Ambient[3]);
+
+    // 纹理
+    m_TextureArray = std::make_shared<TextureArray>(m_Shader);
+    m_Shader->setUniform1i("u_Textures", 0); // 纹理是Texture0
+
+    // 阴影
+    auto ShadowShader = std::make_shared<Shader>(ShadowFile);
+    m_Shader->setUniform1i("u_DepthMap", m_TextureArray->getImageNum()); // TEXTURE 0~ImageNum-1被纹理占用
+    m_Shadow = std::make_shared<Shadow>(ShadowShader);
+//    m_Shadow->setSamples(m_Shader);
+//    m_Shadow->render(m_GeometrySet, m_LightSet);
+
+    // 初始采样点数目以及采样范围设置
+    m_Shader->bind();
+    m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
+    m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
+
+    std::cout << Basic::getConstant("Scene", "MAX_SAMPLE_NUM") << std::endl;
+}
+
+bool test::Scene::save(const std::string &FileName) const
+{
+    std::ofstream Out("../Export/Scenes/" + FileName + ".zephyr");
+    // 主Shader文件
+    Out << "Shader: " << m_Shader->getFilePath() << std::endl;
+    // 阴影
+    Out << "Shadow: " << m_Shadow->m_Shader->getFilePath() << std::endl;
+    Out << "SampleNum: " << u_SampleNum << std::endl;
+    Out << "SampleArea: " <<  u_SampleArea << std::endl;
+
+    // 相机
+    m_Camera->save(Out);
+    // 光
+    Out << "Ambient: " << u_Ambient[0] << " " << u_Ambient[1] << " " << u_Ambient[2] << std::endl;
+    for (auto& light : m_LightSet)
+    {
+        light->save(Out);
+    }
+    Out << "END_LIGHTING" << std::endl;
+    for (auto& geometry : m_GeometrySet)
+    {
+        if (!geometry->save(Out))
+        { // 保存失败
+            std::cout << "Fail to save the scene!" << std::endl;
+            return false;
+        }
+    }
+    Out << "END_GEOMETRY" << std::endl;
+    Out.close();
+    return true;
+}
+
+bool test::Scene::load(const std::string &FileName)
+{
+    std::ifstream In("../Export/Scenes/" + FileName);
+
+    if (!In.is_open())
+    {
+        std::cout << "Invalid Scene Name!" << std::endl;
+        return false;
+    }
+
+    m_LightSet.clear();
+    m_GeometrySet.clear();
+
+
+    std::string str;
+    In >> str >> str;
+    Basic::setFileName("shader", str); // shader文件名
+    In >> str >> str;
+    Basic::setFileName("shadow", str); // shadow文件
+    // 更新常量表
+    Basic::init();
+    In >> str >> u_SampleNum;
+    In >> str >> u_SampleArea;
+//    u_SampleArea /= 100.0f;
+    // 重新初始化
+    init(Basic::getFileName("shader"), Basic::getFileName("shadow"));
+
+    m_Camera->load(In);
+    In >> str >> u_Ambient[0] >> u_Ambient[1] >> u_Ambient[2];
+    // 环境光
+    m_Shader->setUniform4f("u_Ambient", u_Ambient[0], u_Ambient[1], u_Ambient[2], u_Ambient[3]);
+
+    // 光源
+    Light::load(In, m_Shader, m_LightSet);
+    if (!m_LightSet.empty()) selectedLight = *(m_LightSet.begin());
+    // 物体
+    std::shared_ptr<Geometry> geometry;
+    while ((geometry = Geometry::load(In, m_Camera, m_Shader)))
+    {
+        m_GeometrySet.insert(geometry);
+        selectedGeometry = geometry;
+    }
+    In.close();
+    // 更新纹理
+    for (auto& item : m_GeometrySet)
+    {
+        if (item->m_TextureSlot >= 0)
+        {
+            item->m_TextureSlot = m_TextureArray->addTexture(item->m_TexturePath);
+        }
+    }
+    updateShadow = true;
+    OnRender();
+    return true;
+}
+
+void test::Scene::GuiGeometry()
+{
     /* 添加几何物体 */
     if (ImGui::Button("add sphere"))
     {
@@ -134,63 +283,14 @@ void test::Scene::OnImGuiRender()
         updateShadow = true;
     }
 
-    /* 光源的集合 */
-    std::unordered_map<int, std::shared_ptr<Light>> LightMap; // 整数到指针的映射表
-    std::vector<std::string> items;
-    int selectedItem = -1; // 选中光源在列表中的位置
-    /* 把现在的光源做成listbox，这部分是参考ImGui官方示例的 */
-    int i = 0;
-    for (auto light : m_LightSet)
-    {
-        light->m_ID = i;
-        items.push_back(light->m_Name + std::to_string(i));
-        if (selectedLight == light)
-        {
-            selectedItem = i;
-        }
-        LightMap[i] = light;
-        ++i;
-    }
-
-    if (ImGui::ListBox("Lights", &selectedItem, items))
-    {
-        selectedLight = LightMap[selectedItem];
-    }
-
-    if (selectedLight)
-    {
-        if (ImGui::ColorEdit4("Light Color", &selectedLight->m_Color[0]))
-        {
-            selectedLight->updateData();
-        }
-        if (ImGui::SliderFloat3("Light Position", &selectedLight->m_Position.x, -10.0f, 10.0f))
-        {
-            selectedLight->updateData();
-            // 更新阴影
-            updateShadow = true;
-        }
-        if (ImGui::SliderFloat("Light Brightness", &selectedLight->m_Brightness, 0.5f, 5.0f))
-        {
-            selectedLight->updateData();
-        }
-        if (ImGui::SliderFloat3("Light Attenuation", &selectedLight->m_Attenuation[0], 0.0f, 2.0f))
-        {
-            selectedLight->updateData();
-        }
-    }
-
-    // 接下来的面板都和选中的几何物体有关
-    if (!selectedGeometry)
-    {
-        return ;
-    }
-
     /* 物体的集合 */
+    std::vector<std::string> items;
     std::unordered_map<int, std::shared_ptr<Geometry>> GeometryMap; // 整数到指针的映射表
     items.clear();
     /* 把现在的几何物体做成listbox，这部分是参考ImGui官方示例的 */
-    i = 0;
-    for (auto geometry : m_GeometrySet)
+    int i = 0;
+    int selectedItem = -1;
+    for (auto& geometry : m_GeometrySet)
     {
         if (geometry->Tag == "Prism")
         {
@@ -211,6 +311,12 @@ void test::Scene::OnImGuiRender()
     if (ImGui::ListBox("Geometries", &selectedItem, items))
     {
         selectedGeometry = GeometryMap[selectedItem];
+    }
+
+    // 接下来的面板都和选中的几何物体有关
+    if (!selectedGeometry)
+    {
+        return ;
     }
 
     if (ImGui::SliderFloat3("Translation", &selectedGeometry->m_Position.x, -10.0f, 10.0f))
@@ -307,104 +413,234 @@ void test::Scene::OnImGuiRender()
             updateShadow = true;
         }
     }
+}
 
-    if (ImGui::InputText("Texture Selection", &m_TextureName, ImGuiInputTextFlags_EnterReturnsTrue))
+void test::Scene::GuiTexture()
+{
+    std::vector<std::string> FileCollection;
+    for (const auto& File : std::filesystem::directory_iterator("../resource/Textures/"))
     {
-        std::cout << "Hello" << std::endl;
+        std::string Path = File.path();
+        std::string FileName = Path.substr(Path.find_last_of('/')+1);
+        if (FileName[0] == '.') continue; // 隐藏文件
+        FileCollection.emplace_back(FileName);
     }
+    FileCollection.emplace_back(".detach Texture"); // 取消纹理
+    static int selectedItem = -1;
+
+    if (ImGui::Combo("Texture Selection", &selectedItem, FileCollection))
+    {
+        m_TextureName = FileCollection[selectedItem];
+    }
+
     if (ImGui::Button("Load Texture"))
     {
         if (selectedGeometry)
         { // 尝试更换纹理
-            if (m_TextureName == ".detach")
-            { // 删除材质
-                selectedGeometry->detachTexture(m_TextureArray);
-            }
-            else if (std::ifstream("../resource/Textures/" + m_TextureName))
-            { // 检查文件是否存在
-                if (selectedGeometry->m_TextureSlot > 0)
-                {
-                    m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
-                }
-                std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName)) << std::endl;
-            }
-            else
+            if (m_TextureName.length() > 0)
             {
-                std::cout << "The file: '" << m_TextureName << "' is not available!" << std::endl;
+                if (m_TextureName == ".detach Texture")
+                { // 删除材质
+                    selectedGeometry->detachTexture(m_TextureArray);
+                }
+                else if (std::ifstream("../resource/Textures/" + m_TextureName))
+                { // 检查文件是否存在
+                    if (selectedGeometry->m_TextureSlot > 0)
+                    {
+                        m_TextureArray->eraseTexture(selectedGeometry->m_TextureSlot);
+                    }
+                    std::cout << (selectedGeometry->m_TextureSlot = m_TextureArray->addTexture( "../resource/Textures/" + m_TextureName)) << std::endl;
+                    selectedGeometry->m_TexturePath = "../resource/Textures/" + m_TextureName;
+                }
+                else
+                {
+                    std::cout << "The file: '" << m_TextureName << "' is not available!" << std::endl;
+                }
             }
         }
     }
-    if (ImGui::Button("Take Screenshot"))
+}
+
+void test::Scene::GuiLight()
+{
+    /* 光源的集合 */
+    std::unordered_map<int, std::shared_ptr<Light>> LightMap; // 整数到指针的映射表
+    std::vector<std::string> items;
+    int selectedItem = -1; // 选中光源在列表中的位置
+    /* 把现在的光源做成listbox，这部分是参考ImGui官方示例的 */
+    int i = 0;
+    for (auto& light : m_LightSet)
     {
-        Basic::exportImage("test.png");
+        light->m_ID = i;
+        items.push_back(light->m_Name + std::to_string(i));
+        if (selectedLight == light)
+        {
+            selectedItem = i;
+        }
+        LightMap[i] = light;
+        ++i;
     }
 
+    if (ImGui::ListBox("Lights", &selectedItem, items))
+    {
+        selectedLight = LightMap[selectedItem];
+    }
+
+    if (selectedLight)
+    {
+        if (ImGui::ColorEdit4("Light Color", &selectedLight->m_Color[0]))
+        {
+            selectedLight->updateData();
+        }
+        if (ImGui::SliderFloat3("Light Position", &selectedLight->m_Position.x, -10.0f, 10.0f))
+        {
+            selectedLight->updateData();
+            // 更新阴影
+            updateShadow = true;
+        }
+        if (ImGui::SliderFloat("Light Brightness", &selectedLight->m_Brightness, 0.5f, 5.0f))
+        {
+            selectedLight->updateData();
+        }
+        if (ImGui::SliderFloat3("Light Attenuation", &selectedLight->m_Attenuation[0], 0.0f, 2.0f))
+        {
+            selectedLight->updateData();
+        }
+    }
+}
+
+void test::Scene::GuiScene()
+{
+    /* 场景 */
+    // 导入场景
+    // 查找文件夹中所有可以导入的Scene
+    std::vector<std::string> FileCollection;
+    for (const auto& File : std::filesystem::directory_iterator("../Export/Scenes/"))
+    {
+        std::string Path = File.path();
+        std::string FileName = Path.substr(Path.find_last_of('/')+1);
+        if (FileName[0] == '.') continue; // 隐藏文件
+        FileCollection.push_back(FileName);
+    }
+    static int selectedItem = -1;
+    if (ImGui::Combo("Scene Selection", &selectedItem, FileCollection))
+    {
+        m_SceneName_Load = FileCollection[selectedItem];
+    }
+    if (ImGui::Button("Load Scene"))
+    {
+        this->load(m_SceneName_Load);
+    }
+
+    // 保存场景
+    if (ImGui::InputText("Scene Name (Save)", &m_SceneName_Save, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        std::cout << "Hello" << std::endl;
+    }
+    if (ImGui::Button("Save Scene"))
+    {
+        this->save(m_SceneName_Save);
+    }
+}
+
+void test::Scene::GuiObj()
+{
+    /* Obj文件 */
+    // 导入obj
+    std::vector<std::string> FileCollection;
+    for (const auto& File : std::filesystem::directory_iterator("../resource/Obj/"))
+    {
+        std::string Path = File.path();
+        std::string FileName = Path.substr(Path.find_last_of('/')+1);
+        if (FileName[0] == '.') continue; // 隐藏文件
+        FileCollection.push_back(FileName);
+    }
+    static int selectedItem = -1;
+    if (ImGui::Combo("Obj Selection", &selectedItem, FileCollection))
+    {
+        m_ObjName_Import = FileCollection[selectedItem];
+    }
+
+    if (ImGui::Button("Import Obj"))
+    {
+        auto m_ObjLoader = std::make_shared<ObjLoader>(m_Camera, m_Shader);
+        m_ObjLoader->loadOBJ(m_ObjName_Import);
+        m_ObjLoader->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection();
+        m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};
+        m_GeometrySet.insert(m_ObjLoader);
+        selectedGeometry = m_ObjLoader;
+        this->save(m_ObjName_Import);
+    }
+    // 导出obj
+    if (ImGui::InputText("Obj Name (Export)", &m_ObjName_Export, ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        std::cout << "Hello" << std::endl;
+    }
+    if (ImGui::Button("Export Obj") && selectedGeometry)
+    { // 选中一个物体导出obj
+        selectedGeometry->exportObj(m_ObjName_Export);
+    }
+}
+
+void test::Scene::GuiShadow()
+{
     if (ImGui::SliderInt("Shadow Sample Number", &u_SampleNum,0, Basic::getConstant("Scene", "MAX_SAMPLE_NUM")))
     { // 更新阴影采样点数目
         m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
     }
-    if (ImGui::SliderFloat("Shadow Sample Area", &u_SampleArea, 0.0f, 2.0f))
+    if (ImGui::DragFloat("Shadow Sample Area", &u_SampleArea, 0.00008f, 0.0f, 0.023f))
     {
-        m_Shader->setUniform1f("u_SampleArea", u_SampleArea / 100.0f);
-    }
-
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-    if (updateShadow)
-    {
-
+        m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
     }
 }
 
-test::Scene::Scene()
+void test::Scene::OnKeyAction(int key, int mods)
 {
-
-    // 开启深度测试
-    glEnable(GL_DEPTH_TEST);
-
-    m_Shader = std::make_shared<Shader>(Basic::getFileName("Scene"));
-    m_Shader->bind();
-    m_Camera = std::make_shared<Camera>();
-
-    selectedGeometry = nullptr;
-
-    // 地板
-    Floor = std::make_shared<Cube>(m_Camera, m_Shader);
-    Floor->m_Scale = {20.0f, 20.0f, 0.0001f, 20.0f};
-    Floor->m_Color = glm::vec4(0.18f, 0.6f, 0.96f, 1.0f);
-    Floor->updateDrawData();
-    Floor->m_Position = m_Camera->getPosition() + 10.0f * m_Camera->getDirection() - glm::vec3(0.0f, 2.0f, 0.0f);
-
-    // Obj
-    auto m_ObjLoader = std::make_shared<ObjLoader>(m_Camera, m_Shader);
-    m_ObjLoader->loadOBJ("../resource/Obj/chair.obj");
-//    m_ObjLoader->loadOBJ("../resource/Obj/Vases.obj", false);
-    m_ObjLoader->m_Position = Floor->m_Position + glm::vec3(4.0f, 2.0f, -1.0f);
-    m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};
-    m_GeometrySet.insert(m_ObjLoader);
-    selectedGeometry = m_ObjLoader;
-
-    // 环境光
-    m_Shader->setUniform4f("u_Ambient", 0.2f, 0.2, 0.2f, 1.0f);
-
-    // 纹理
-    m_TextureArray = std::make_shared<TextureArray>(m_Shader);
-    m_Shader->setUniform1i("u_Textures", 0); // 纹理是Texture0
-
-    // 阴影
-    auto ShadowShader = std::make_shared<Shader>(Basic::getFileName("Shadow"));
-    m_Shader->setUniform1i("u_DepthMap", m_TextureArray->getImageNum()); // TEXTURE 0~ImageNum-1被纹理占用
-    m_Shadow = std::make_shared<Shadow>(ShadowShader);
-    m_Shadow->setSamples(m_Shader);
-    m_Shadow->render(m_GeometrySet, m_LightSet);
-    // 初始采样点数目
-    u_SampleNum = 10;
-    m_Shader->bind();
-    m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
-    u_SampleArea = 0.001;
-    m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
-
-    std::cout << Basic::getConstant("Scene", "MAX_SAMPLE_NUM") << std::endl;
-
-    Geometry::exportObj("test.obj", m_GeometrySet);
+    if (key == GLFW_KEY_BACKSPACE)
+    { // 删除当前选中物体/光源
+        if (mods == GLFW_MOD_SHIFT)
+        { // 组合键删除光源
+            std::cout << "deleting light" << std::endl;
+            if (selectedLight)
+            {
+                m_LightSet.erase(selectedLight);
+                if (!m_LightSet.empty())
+                {
+                    selectedLight = *m_LightSet.begin();
+                }
+                else selectedLight = nullptr;
+                updateShadow = true; // 更新阴影
+            }
+        }
+        else
+        { // 删除物体
+            std::cout << "deleting object" << std::endl;
+            if (selectedGeometry)
+            {
+                m_GeometrySet.erase(selectedGeometry);
+                if (!m_GeometrySet.empty())
+                {
+                    selectedGeometry = *m_GeometrySet.begin(); // 选中随机一个物体作为选中物体
+                }
+                else selectedGeometry = nullptr;
+                updateShadow = true; // 更新阴影
+            }
+        }
+    }
+    else if (key == GLFW_KEY_A && mods == GLFW_MOD_SHIFT)
+    {
+        // 查找文件夹中文件数目
+        int Counter = 0;
+        for (const auto& File : std::filesystem::directory_iterator("../Export/Screenshots/"))
+        {
+            std::string Path = File.path();
+            std::string FileName = Path.substr(Path.find_last_of('/')+1);
+            if (FileName[0] == '.') continue; // 隐藏文件
+            Counter ++;
+        }
+        std::stringstream FileName;
+        FileName << "Screenshot_" << Counter << ".png";
+        Basic::exportImage(FileName.str());
+        std::cout << "Taking Screenshot!" << std::endl;
+    }
 }

@@ -7,9 +7,9 @@
 #include <random>
 
 
-Sphere::Sphere(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shader> &shader,
+Sphere::Sphere(const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shader> &shader,
                const glm::vec3 &position, const Material& material, const Rotation& rotation, const Scale& Scale)
-   : Geometry(Camera, shader, position, material, rotation, Scale)
+   : Geometry(camera, shader, position, material, rotation, Scale)
 {
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
@@ -19,6 +19,27 @@ Sphere::Sphere(const std::shared_ptr<Camera>& Camera, const std::shared_ptr<Shad
     m_VerticalSteps = 50;
     m_HorizontalSteps = 50;
     updateDrawData();
+
+
+    // 函数指针的加载
+    // 球类需要额外储存细分度的信息
+    SupplementarySave = [&](std::ofstream& Out) -> bool{
+        Out << m_HorizontalSteps << " " << m_VerticalSteps << std::endl;
+        return true;
+    };
+    SupplementaryLoad = [&](std::ifstream& In)
+    {
+        std::string Line;
+        std::stringstream ss;
+        while (std::getline(In, Line))
+        {
+            if (Line.length() == 0) continue;
+            ss.clear();
+            ss.str(Line);
+            ss >> m_HorizontalSteps >> m_VerticalSteps;
+            break;
+        }
+    };
 }
 
 void Sphere::updateDrawData()

@@ -19,6 +19,7 @@
 #include <fstream>
 #include <sstream>
 
+#define __DEBUG
 
 // shader代码中材质数组的大小
 #define SLOT_NUM 15
@@ -197,10 +198,9 @@ namespace Basic
     extern std::unordered_map<std::string, std::unordered_map<std::string, int>> ConstantMap;
     // 文件名映射表（简称和路径）
     extern std::unordered_map<std::string, std::string> AliasMap;
-
     void init();
+    void setFileName(const std::string& AliasFileName, const std::string& FileName);
     std::string getFileName(const std::string& AliasFileName);
-
     // 每个文件都有一个常量表，要获得一个常量时，通过ConstantMap[文件名（Alias）][常量名]
     int getConstant(const std::string& AliasFileName, const std::string&& ConstantName);
 

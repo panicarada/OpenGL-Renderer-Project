@@ -6,7 +6,6 @@
 // 注意！！！！长宽要一样
 const unsigned int ShadowWidth =  (WINDOW_WIDTH << 1);
 const unsigned int ShadowHeight = (WINDOW_WIDTH << 1);
-
 Shadow::Shadow(const std::shared_ptr<Shader> &shader)
         : m_Shader(shader)
 {
@@ -25,14 +24,12 @@ Shadow::Shadow(const std::shared_ptr<Shader> &shader)
                      nullptr);
         // nullptr表示先分配空间，还没写入
     }
-
     // 设置纹理的属性
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
     // 绑定Frame Buffer
     glBindFramebuffer(GL_FRAMEBUFFER, FBO);
     // 把Depth map绑定到Frame buffer上
@@ -91,7 +88,6 @@ void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
         m_Shader->setUniformMat4f("u_LightSpaceMatrices[4]", LightSpaceMatrices[4]);
         LightSpaceMatrices[5] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
         m_Shader->setUniformMat4f("u_LightSpaceMatrices[5]", LightSpaceMatrices[5]);
-
         m_Shader->setUniform3f("u_LightPosition", light->m_Position);
 
         for (auto geometry : GeometrySet)
@@ -103,7 +99,6 @@ void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
             geometry->m_Shader = Temp;
         }
     }
-
     // 解除Frame Buffer绑定
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // 关闭偏移
@@ -133,9 +128,7 @@ void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
             {
                 // 采样点在一个立方格内
                 auto Point = glm::vec3(dis(gen), dis(gen), dis(gen));
-//                std::cout << "( " << Point[0] << ", " << Point[1] << ", " << Point[2] << ")" << std::endl;
                 sampledShader->setUniform3f("u_SampledPoints[" + std::to_string(Counter) + "]", Point);
-
                 // 离得越远，重要度越低
                 float Importance = 1.0f / (glm::pow(glm::length(Point),
                                                     glm::exp(EulerConstant + dis(gen)/20.0)) + Factor);
@@ -145,6 +138,4 @@ void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
             }
         }
     }
-//    std::cout << ImportanceSum << std::endl;
-//    sampledShader->setUniform1f("u_SampleImportanceSum", ImportanceSum);
 }

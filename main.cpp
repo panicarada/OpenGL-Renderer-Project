@@ -19,13 +19,6 @@
 
 #include "TestShadow.h"
 
-
-
-void MouseCallback(GLFWwindow* window, double xPos, double yPos); // 鼠标回调函数
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods); // 键盘回调（指定Action后，长按只会响应一次）函数
-void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY);
-
-
 std::shared_ptr<Camera> camera = nullptr;
 test::Test* currentTest = nullptr;
 
@@ -33,6 +26,7 @@ test::Test* currentTest = nullptr;
 #include "imgui.h"
 #include "imgui/examples/imgui_impl_glfw.h"
 #include "imgui/examples/imgui_impl_opengl3.h"
+
 
 int main()
 {
@@ -158,11 +152,31 @@ int main()
     float lastTime = 0.0f;
 
     // 注册鼠标回调函数
-    glfwSetCursorPosCallback(window, MouseCallback);
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xPos, double yPos) {
+        if (camera)
+        {
+            camera->OnMouseAction(window, {xPos, yPos});
+        }
+    });
+
     // 注册键盘回调函数
-    glfwSetKeyCallback(window, KeyCallback);
+    glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
+        if (currentTest)
+        {
+            currentTest->OnKeyAction(key, mods);
+        }
+        if (camera)
+        {
+            camera->OnKeyAction(window, key, scancode, action, mods);
+        }
+    });
     // 注册触摸板回调函数
-    glfwSetScrollCallback(window, ScrollCallback);
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double deltaX, double deltaY){
+        if (camera)
+        {
+            camera->OnScrollAction(glm::vec2(deltaX, deltaY));
+        }
+    });
 
     while( !glfwWindowShouldClose(window) )
     {
@@ -208,48 +222,4 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
-}
-
-
-void MouseCallback(GLFWwindow* window, double xPos, double yPos)
-{
-    if (camera)
-    {
-        camera->OnMouseAction(window, {xPos, yPos});
-    }
-}
-
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (action == GLFW_PRESS)
-    {
-        if (camera && key == GLFW_KEY_SPACE)
-        { // 相机漫游状态
-            camera->isFPS = !camera->isFPS;
-            if (camera->isFPS)
-            { // 禁用鼠标
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            }
-            else // 开启鼠标
-            {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            }
-        }
-        if (camera && key == GLFW_KEY_TAB)
-        { // zooming状态恢复
-            camera->resetZooming();
-        }
-        if (currentTest)
-        {
-            currentTest->OnKeyAction(key, mods);
-        }
-    }
-}
-
-void ScrollCallback(GLFWwindow* window, double deltaX, double deltaY)
-{
-    if (camera)
-    {
-        camera->OnScrollAction(deltaY);
-    }
 }

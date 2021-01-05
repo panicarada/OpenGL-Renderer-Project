@@ -15,7 +15,7 @@ public:
            const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f});
     void updateSubdivision(int VerticalSteps, int HorizontalSteps);
     void updateDrawData() override;
-    inline std::string getClassName() override
+    inline std::string getClassName() const override
     {
         return "Geometry::Sphere";
     }

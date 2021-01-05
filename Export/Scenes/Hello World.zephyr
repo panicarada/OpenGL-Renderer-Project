@@ -1,0 +1,46 @@
+Shader: ../resource/Scene/Scene.shader
+Shadow: ../resource/Scene/Shadow.shader
+SampleNum: 10
+SampleArea: 0.514
+Projection: 1.04172 0 0 0 0 1.04172 0 0 0 0 -1.002 -1 0 0 -0.2002 0 
+Tag: Perspective
+Position: 4.4154 -0.777973 -3.98981
+InitDirection: 0 0 -1
+InitRight: 1 -0 0
+InitUp: 0 1 0
+Rotation: 1.05287 -0.421965
+AngleOfView: 87.659
+InitAngleOfView: 45
+END_CAMERA
+Ambient: 0.2 0.2 0.2
+Brightness: 2.7
+Name: Light
+Position: 4.146 0 1.41421
+Color: 1 1 1 1
+Attenuation: 1 0.06 0
+END_LIGHTING
+Geometry::ObjLoader NONE
+Position: 0 -1.707 -6.03726
+Rotation: 0 0 0
+Color: 0.48 0.75 0.81 1
+Scale: 0.1 0.05 0.05 0.05
+Material::Ambient: 1 1 1 1
+Material::Diffuse: 1 1 1 1
+Material::Specular: 1 1 1 1
+Material::Highlight: 1
+TextureSlot: 1
+TexturePath: ../resource/Textures/moroccan-flower-dark.png
+chair.obj
+Geometry::Sphere NONE
+Position: 0.244 1.545 -2.846
+Rotation: 0 0 0
+Color: 0.48 0.75 0.81 1
+Scale: 1 1 1 1
+Material::Ambient: 1 1 1 1
+Material::Diffuse: 1 1 1 1
+Material::Specular: 1 1 1 1
+Material::Highlight: 1
+TextureSlot: 0
+TexturePath: ../resource/Textures/watercolor.png
+50 50
+END_GEOMETRY

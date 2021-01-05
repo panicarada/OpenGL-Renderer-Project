@@ -1,0 +1,46 @@
+Shader: ../resource/Scene/Scene.shader
+Shadow: ../resource/Scene/Shadow.shader
+SampleNum: 10
+SampleArea: 0.001
+Projection: 1.06092 0 0 0 0 1.06092 0 0 0 0 -1.002 -1 0 0 -0.2002 0 
+Tag: Perspective
+Position: 4.05207 -0.0280851 -1.21906
+InitDirection: 0 0 -1
+InitRight: 1 -0 0
+InitUp: 0 1 0
+Rotation: 0.644468 -0.0410786
+AngleOfView: 86.6137
+InitAngleOfView: 45
+END_CAMERA
+Ambient: 0.2 0.2 0.2
+Brightness: 2.678
+Name: Light
+Position: 2.195 3.496 1.41421
+Color: 1 1 1 1
+Attenuation: 1 0.06 0.033
+END_LIGHTING
+Geometry::ObjLoader NONE
+Position: 0.894 -1.22 -3.008
+Rotation: 0 0 0
+Color: 0.48 0.75 0.81 1
+Scale: 0.1 0.05 0.05 0.05
+Material::Ambient: 1 1 1 1
+Material::Diffuse: 1 1 1 1
+Material::Specular: 1 1 1 1
+Material::Highlight: 1
+TextureSlot: 1
+TexturePath: ../resource/Textures/wood.jpg
+chair.obj
+Geometry::Sphere NONE
+Position: 1.79088 0 -4.78644
+Rotation: 0 0 0
+Color: 0.48 0.75 0.81 1
+Scale: 1 1 1 1
+Material::Ambient: 0.759804 0.376177 0.443876 1
+Material::Diffuse: 0.794118 0.612295 0.276384 1
+Material::Specular: 0.65643 0.769608 0 1
+Material::Highlight: 1
+TextureSlot: -1
+TexturePath: NONE
+50 50
+END_GEOMETRY

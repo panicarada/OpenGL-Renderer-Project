@@ -5,6 +5,7 @@
 #include "Shader.h"
 
 Shader::Shader(const std::string &Filepath)
+    : m_FilePath(Filepath)
 {
     ShaderProgramSource source = parseShader(Filepath);
     m_RendererID = createShader(source.VertexSource, source.FragmentSource, source.GeometrySource);

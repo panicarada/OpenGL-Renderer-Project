@@ -28,6 +28,11 @@ public:
     Shader(const std::string& Filepath);
     ~Shader();
 
+    inline std::string getFilePath() const
+    {
+        return m_FilePath;
+    }
+
     void bind() const;
     void unbind() const;
     inline unsigned int getRendererID() const

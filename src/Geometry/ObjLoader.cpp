@@ -4,20 +4,43 @@
 
 #include "ObjLoader.h"
 
-ObjLoader::ObjLoader(const std::shared_ptr<Camera> &Camera, const std::shared_ptr<Shader> &Shader,
+ObjLoader::ObjLoader(const std::shared_ptr<Camera> &camera, const std::shared_ptr<Shader> &shader,
                      const glm::vec3 &Position, const Material &material, const Rotation &rotation, const Scale &Scale)
-        : Geometry(Camera, Shader, Position, material, rotation, Scale)
+        : Geometry(camera, shader, Position, material, rotation, Scale)
 {
     m_Layout->Push<float>(3); // 点坐标
     m_Layout->Push<float>(3); // 法向量
     m_Layout->Push<float>(4); // 颜色
     m_Layout->Push<float>(2); // 纹理坐标
+
+
+    SupplementarySave = [&](std::ofstream& Out) -> bool{
+        Out << m_FileName << std::endl;
+        return true;
+    };
+
+    SupplementaryLoad = [&](std::ifstream& In){
+        std::string Line;
+        std::stringstream ss;
+        while (std::getline(In, Line))
+        {
+            if (Line.length() == 0) continue;
+            ss.clear();
+            ss.str(Line);
+            ss >> m_FileName;
+            loadOBJ(m_FileName);
+            break;
+        }
+    };
 }
 
 void ObjLoader::loadOBJ(const std::string &FileName)
 {
     std::stringstream ss;
-    std::ifstream inFile(FileName);
+//    std::ifstream inFile("../resource/Obj/" + FileName + ".obj");
+    std::ifstream inFile("../resource/Obj/" + FileName);
+
+    m_FileName = FileName;
     std::string Line = "";
 
     // 打开文件
@@ -30,15 +53,12 @@ void ObjLoader::loadOBJ(const std::string &FileName)
     std::vector<glm::vec3> Positions;
     std::vector<glm::vec2> TexCoords;
     std::vector<glm::vec3> Normals;
-    // Face Vectors，一个face3*3个数组为一组，表明一个三角形三个顶点格子的Position、TexCoord、Normal的索引（文件中的位置）
-    // 有些文件一行face是4*3，表示(1, 2, 3), (2, 3, 4)两个三角形所组成的quad，我们在输入处说明
+    
     std::vector<unsigned int> PositionIndices;
     std::vector<unsigned int> TexIndices;
     std::vector<unsigned int> NormalIndices;
 
-
     // Indices，声明绘制三角形的方式
-//    std::vector<unsigned int> Indices;
     m_Indices.clear();
     // 每次读取一行
     while (std::getline(inFile, Line))
@@ -141,4 +161,9 @@ void ObjLoader::loadOBJ(const std::string &FileName)
 //    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, Indices.size() * sizeof(unsigned int), &Indices[0]);
 //    glBufferSubData(GL_ARRAY_BUFFER, 0, Vertices.size() * sizeof(Vertex), &Vertices[0]); // No allocation, only send data
     m_VAO->addBuffer(*m_VertexBuffer, *m_Layout);
+}
+
+void ObjLoader::updateDrawData()
+{
+
 }

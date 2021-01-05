@@ -113,29 +113,28 @@ uniform float u_SampleImportance[MAX_SAMPLE_NUM];
 uniform float u_SampleArea; // 采样范围
 float calculateShadow(vec3 FragPosition)
 {
-	// Fragment到光线的向量
-	vec3 FragToLight = FragPosition - u_Lights[0].Position;
+	// 光线到fragment的向量
+	vec3 LightToFrag = FragPosition - u_Lights[0].Position;
 
 	// 该gragment到光的距离就是其深度
-	float CurrentDepth = length(FragToLight);
+	float CurrentDepth = length(LightToFrag);
 	float Shadow = 0.0;
 	float Bias = 0.12;
 	float ViewDistance = length(u_CameraPosition - FragPosition);
 
 	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) * u_SampleArea;
 //	float DiskRadius = 1.0 / 100.0;
-	vec3 Noise = vec3((random(FragToLight.x) - 0.5) * 0.3);
+	vec3 Noise = 2.5 * (vec3(random(LightToFrag.x), random(CurrentDepth), random(ViewDistance)) - 0.5);
 	// 把for循环展开一点，可以加速
 	float SampleImportanceSum = 0.0;
 	if (u_SampleNum == 0)
 	{ // 没有阴影
 		return 0.0;
 	}
-
 	for(int i = 0; i < u_SampleNum; i ++)
 	{
-		// 用FragToLight采样在光视角下该fragment对应位置最近的深度（理论上如果该点被光直射，则最近深度就是它自己的深度）
-		float ClosestDepth = texture(u_DepthMap, FragToLight + // 加上一个随机噪声
+		// 用LightToFrag采样在光视角下该fragment对应位置最近的深度（理论上如果该点被光直射，则最近深度就是它自己的深度）
+		float ClosestDepth = texture(u_DepthMap, LightToFrag + // 加上一个随机噪声
 									(u_SampledPoints[i] + Noise) * DiskRadius).r;
 		ClosestDepth *= u_zFar;   // 计算深度时，我们归一到了[0, 1]，现在再展开
 		if(CurrentDepth - Bias > ClosestDepth)

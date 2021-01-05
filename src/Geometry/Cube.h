@@ -17,13 +17,12 @@ public:
          const Material& material = {glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), 1.0f},
          const Rotation& rotation = {0.0f, 0.0f, 0.0f},
          const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f});
-    void updateDrawData() override {}
-    inline std::string getClassName() override
+    void updateDrawData();
+    inline std::string getClassName() const override
     {
         return "Geometry::Cube";
     }
 private:
-    void init();
     inline std::vector<Vertex> getSquare(const glm::vec3 Normal)
     {
         // 随机数

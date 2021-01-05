@@ -59,5 +59,5 @@ add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src
         src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp
         src/Scene/SoftShadow.h src/Tests/TestShadowVSM.cpp
         src/Tests/TestShadowVSM.h
-        src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp lib/include/stb_image/stb_image_write.h lib/stb_image/stb_image_write.cpp)
+        src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp lib/include/stb_image/stb_image_write.h lib/stb_image/stb_image_write.cpp src/Geometry/Geometry.cpp)
 target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX)

@@ -13,7 +13,6 @@ TextureArray::TextureArray(std::shared_ptr<Shader> &shader, int ImageNum, int Wi
     { // 初始化编号池
         availableSlots.insert(i);
     }
-//    glActiveTexture(GL_TEXTURE0);
     DebugCall(glGenTextures(1, &m_RendererID)); // 获取一个buffer位置
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_RendererID); // 绑定纹理
     //设置如何从数据缓冲区去读取图像数据
@@ -23,7 +22,6 @@ TextureArray::TextureArray(std::shared_ptr<Shader> &shader, int ImageNum, int Wi
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     //  要加载500 * 500的图片15张，先分配空间
     //  所有图片大小都要一样
     glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, m_Width, m_Height, m_ImageNum, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -43,16 +41,14 @@ int TextureArray::addTexture(const std::string& path)
      *            desired_channels表示希望从图像得到的通道数，我们需要R, G, G, Alpha
      */
     auto tempBuffer = stbi_load(path.c_str(), &Width, &Height, &BPP, STBI_rgb_alpha);
-
     //  所有图片大小都要一样，所以需要resize
-    unsigned char* LocalBuffer = (unsigned char*) malloc(m_Width * m_Height * STBI_rgb_alpha * sizeof(unsigned char));
+    auto LocalBuffer = (unsigned char*) malloc(m_Width * m_Height * STBI_rgb_alpha * sizeof(unsigned char));
     if (stbir_resize_uint8(tempBuffer, Width, Height, 0, LocalBuffer, m_Width, m_Height, 0, STBI_rgb_alpha)
         && !availableSlots.empty())
     { // 如果读取并且改大小成功，并且还有可用的slot编号
         bind(); // 绑定纹理
         //设置如何从数据缓冲区去读取图像数据
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
         // 从可用slot编号池中取出一个进行绑定
         int SlotID = *(availableSlots.begin());
         availableSlots.erase(SlotID);
@@ -61,7 +57,7 @@ int TextureArray::addTexture(const std::string& path)
         free(LocalBuffer);
         return SlotID;
     }
-    return -1;
+    return -1; // 添加素材失效
 }
 
 bool TextureArray::eraseTexture(int SlotID)

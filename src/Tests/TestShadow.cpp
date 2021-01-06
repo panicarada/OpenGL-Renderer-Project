@@ -50,7 +50,7 @@ void test::TestShadow::OnImGuiRender()
     {
         selectedLight->updateData();
         // 重新计算阴影
-        m_Shadow->render(m_GeometrySet, m_LightSet);
+//        m_Shadow->render(m_GeometrySet, m_LightSet);
         // 重新采样
         OnRender();
     }
@@ -115,5 +115,5 @@ test::TestShadow::TestShadow()
     m_Shadow = std::make_shared<Shadow>(ShadowShader);
     m_Shadow->setSamples(m_Shader);
 
-    m_Shadow->render(m_GeometrySet, m_LightSet);
+//    m_Shadow->render(m_GeometrySet, m_LightSet);
 }

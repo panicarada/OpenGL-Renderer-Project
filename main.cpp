@@ -161,7 +161,7 @@ int main()
 
     // 注册键盘回调函数
     glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
-        if (currentTest)
+        if (currentTest && action == GLFW_PRESS)
         {
             currentTest->OnKeyAction(key, mods);
         }

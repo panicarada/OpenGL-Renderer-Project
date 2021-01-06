@@ -45,7 +45,7 @@ Shadow::Shadow(const std::shared_ptr<Shader> &shader)
 }
 
 void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
-                          const std::set<std::shared_ptr<Light>> &LightSet)
+                          const std::shared_ptr<Light> &light)
 {
     auto LightProjection = glm::perspective(glm::radians(90.0f), WINDOW_RATIO, ZNEAR, ZFAR);
 
@@ -70,34 +70,33 @@ void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
     m_Shader->setUniform1f("u_zFar", ZFAR);
 
     glm::mat4 LightProj = glm::perspective(glm::radians(90.0f), WINDOW_RATIO, ZNEAR, ZFAR);
-    for (auto light : LightSet)
-    {
-        // 六个面的光空间矩阵（以光为视点的Project Matrix * View Matrix）
-        std::array<glm::mat4, 6> LightSpaceMatrices;
-        // view matrix依次是光源向立方体六个面观察
-        // 不用for循环，减少流水线的stall
-        LightSpaceMatrices[0] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[0]", LightSpaceMatrices[0]);
-        LightSpaceMatrices[1] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[1]", LightSpaceMatrices[1]);
-        LightSpaceMatrices[2] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[2]", LightSpaceMatrices[2]);
-        LightSpaceMatrices[3] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[3]", LightSpaceMatrices[3]);
-        LightSpaceMatrices[4] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[4]", LightSpaceMatrices[4]);
-        LightSpaceMatrices[5] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
-        m_Shader->setUniformMat4f("u_LightSpaceMatrices[5]", LightSpaceMatrices[5]);
-        m_Shader->setUniform3f("u_LightPosition", light->m_Position);
 
-        for (auto geometry : GeometrySet)
-        {
-            // 暂时切换Shader，用来渲染阴影
-            auto Temp = geometry->m_Shader;
-            geometry->m_Shader = m_Shader;
-            geometry->draw();
-            geometry->m_Shader = Temp;
-        }
+
+    // 六个面的光空间矩阵（以光为视点的Project Matrix * View Matrix）
+    std::array<glm::mat4, 6> LightSpaceMatrices;
+    // view matrix依次是光源向立方体六个面观察
+    // 不用for循环，减少流水线的stall
+    LightSpaceMatrices[0] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[0]", LightSpaceMatrices[0]);
+    LightSpaceMatrices[1] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[1]", LightSpaceMatrices[1]);
+    LightSpaceMatrices[2] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[2]", LightSpaceMatrices[2]);
+    LightSpaceMatrices[3] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[3]", LightSpaceMatrices[3]);
+    LightSpaceMatrices[4] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[4]", LightSpaceMatrices[4]);
+    LightSpaceMatrices[5] = (LightProj * glm::lookAt(light->m_Position, light->m_Position + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    m_Shader->setUniformMat4f("u_LightSpaceMatrices[5]", LightSpaceMatrices[5]);
+    m_Shader->setUniform3f("u_LightPosition", light->m_Position);
+
+    for (auto& geometry : GeometrySet)
+    {
+        // 暂时切换Shader，用来渲染阴影
+        auto Temp = geometry->m_Shader;
+        geometry->m_Shader = m_Shader;
+        geometry->draw();
+        geometry->m_Shader = Temp;
     }
     // 解除Frame Buffer绑定
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

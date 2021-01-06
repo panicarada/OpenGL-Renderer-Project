@@ -19,7 +19,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
     void render(const std::set<std::shared_ptr<Geometry>>& GeometrySet,
-                      const std::set<std::shared_ptr<Light>>& LightSet); // 渲染深度图
+                      const std::shared_ptr<Light>& light); // 渲染深度图
     inline unsigned int getDepthMap() const
     {
         return DepthMap;

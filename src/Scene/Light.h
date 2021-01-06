@@ -10,23 +10,25 @@
 class Light
 {
 public:
-    Light(std::shared_ptr<Shader> shader, int ID = -1, glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec4 Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), float Intensity = 1.0f)
+    Light(const std::shared_ptr<Shader>& shader, int ID = -1, glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec4 Color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f), float Intensity = 1.0f)
         : m_Shader(shader), m_Position(Position), m_Color(Color), m_Brightness(1.0f), m_Attenuation(glm::vec3(1.0f, 0.06f, 0.02f))
     {
+        // 初始化
+        if (!isInited)
+        {
+            availableSlots.clear();
+            isInited = true;
+            for (int i = 0;i < Basic::getConstant("Scene", "MAX_LIGHT_NUM"); ++i)
+            {
+                availableSlots.insert(i);
+                m_Shader->setUniform1i("u_Lights[" + std::to_string(i) + "].isOpen", 0);
+            }
+        }
         m_ID = *availableSlots.begin(); // 任意获取一个可用的下标
         std::cout << "Light ID: " << m_ID << std::endl;
         availableSlots.erase(m_ID); // 这个下标被占用
         m_Name = "Light";
 
-        // 初始化
-        if (!isInited)
-        {
-            isInited = true;
-            for (int i = 0;i < availableSlots.size(); ++i)
-            {
-                m_Shader->setUniform1i("u_Lights[" + std::to_string(i) + "].isOpen", 0);
-            }
-        }
         m_Shader->setUniform1i("u_Lights[" + std::to_string(m_ID) + "].isOpen", 1);
     }
     ~Light()

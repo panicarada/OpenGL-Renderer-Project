@@ -27,9 +27,6 @@
 // 电脑核数
 #define CORE_NUM 8
 
-// 最大光源数目
-#define MAX_LIGHT_NUM 10
-
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 960
 

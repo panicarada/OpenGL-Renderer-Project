@@ -23,32 +23,29 @@ void test::Scene::OnRender()
 //    m_Shadow_00->setSamples(m_Shader);
     if (updateShadow)
     {
-        bool isFirst = true;
+        int Counter = 0;
         for (auto & light : m_LightSet)
         {
-            if (isFirst)
+            if (Counter == 0)
             {
-                m_Shadow_0->setSamples(m_Shader);
-                m_Shadow_0->render(m_GeometrySet, light);
-                isFirst = false;
+                m_Shadows[0]->setSamples(m_Shader);
             }
-            else
-            {
-//                m_Shadow_1->setSamples(m_Shader);
-                m_Shadow_1->render(m_GeometrySet, light);
-            }
+            glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum() + light->m_ID);
+            m_Shadows[light->m_ID]->render(m_GeometrySet, light);
+            Counter ++;
         }
         updateShadow = false;
     }
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // 启用深度图
-    glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum());
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow_0->getDepthMap());
-//    glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum()+1);
-//    glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadow_1->getDepthMap());
 
+    // 启用深度图
+    for (int i = 0; i < m_Shadows.size(); ++i)
+    {
+        glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum() + i);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadows[i]->getDepthMap());
+    }
 
     // 启用材质
     glActiveTexture(GL_TEXTURE0);
@@ -120,10 +117,11 @@ void test::Scene::init(const std::string &ShaderFile, const std::string &ShadowF
 
     // 阴影
     auto ShadowShader = std::make_shared<Shader>(ShadowFile);
-    m_Shader->setUniform1i("u_DepthMap_0", m_TextureArray->getImageNum()); // TEXTURE 0~ImageNum-1被纹理占用
-    m_Shadow_0 = std::make_shared<Shadow>(ShadowShader);
-    m_Shader->setUniform1i("u_DepthMap_1", m_TextureArray->getImageNum()+1); // TEXTURE 0~ImageNum-1被纹理占用
-    m_Shadow_1 = std::make_shared<Shadow>(ShadowShader);
+    for (int i = 0;i < Basic::getConstant("Scene", "MAX_LIGHT_NUM"); ++i)
+    {
+        m_Shader->setUniform1i("u_DepthMap[" + std::to_string(i) + "]", m_TextureArray->getImageNum() + i); // TEXTURE 0~ImageNum-1被纹理占用
+        m_Shadows.emplace_back(std::make_shared<Shadow>(ShadowShader));
+    }
 
 //    m_Shadow_0->setSamples(m_Shader);
 //    m_Shadow_0->render(m_GeometrySet, m_LightSet);
@@ -142,7 +140,7 @@ bool test::Scene::save(const std::string &FileName) const
     // 主Shader文件
     Out << "Shader: " << m_Shader->getFilePath() << std::endl;
     // 阴影
-    Out << "Shadow: " << m_Shadow_0->m_Shader->getFilePath() << std::endl;
+//    Out << "Shadow: " << m_Shadow_0->m_Shader->getFilePath() << std::endl;
     Out << "SampleNum: " << u_SampleNum << std::endl;
     Out << "SampleArea: " <<  u_SampleArea << std::endl;
 

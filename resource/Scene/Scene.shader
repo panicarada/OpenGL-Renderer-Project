@@ -49,7 +49,7 @@ struct Light
 	float Brightness; // 光源亮度
 	vec3 Attenuation; // 光源的衰减系数
 };
-const int MAX_LIGHT_NUM = 10; // 最大光源数目
+const int MAX_LIGHT_NUM = 4; // 最大光源数目
 uniform Light u_Lights[MAX_LIGHT_NUM]; // 光源集合
 // uniform int u_LightsNum; // 光源数目
 uniform vec4 u_Ambient; // 环境光
@@ -61,8 +61,9 @@ uniform int u_TexIndex; // 使用的纹理下标
 uniform sampler2DArray u_Textures; // 纹理数组
 const int MAX_TEX_NUM = 15; // 最多的纹理数
 
-uniform samplerCube u_DepthMap_0;
-uniform samplerCube u_DepthMap_1;
+uniform samplerCube u_DepthMap[MAX_LIGHT_NUM];
+//uniform samplerCube u_DepthMap_0;
+//uniform samplerCube u_DepthMap_1;
 
 
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
@@ -187,7 +188,7 @@ void main()
 		Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
 
 		// 计算阴影
-		float Shadow = calculateShadow(u_DepthMap_0, v_FragPosition);
+		float Shadow = calculateShadow(u_DepthMap[0], v_FragPosition);
 		Lighting += (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow);
 	}
 	i = 1;
@@ -211,10 +212,15 @@ void main()
 		Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
 
 		// 计算阴影
-//		float Shadow = calculateShadow(u_DepthMap_1, v_FragPosition);
-		float Shadow = 0.0;
+		float Shadow = calculateShadow(u_DepthMap[1], v_FragPosition);
+//		float Shadow = 0.0;
 //		Lighting += (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow);
+
+		FragColor = Shadow * vec4(1.0);
+		return ;
 	}
+
+
 	Lighting = clamp(Lighting, 0.0, 1.0);
 
 	vec4 Color = v_Color;

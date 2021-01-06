@@ -59,8 +59,8 @@ namespace test
         std::shared_ptr<TextureArray> m_TextureArray; // 纹理
 
         // 阴影
-        std::shared_ptr<Shadow> m_Shadow_0;
-        std::shared_ptr<Shadow> m_Shadow_1;
+//        std::shared_ptr<Shadow> m_Shadow_0;
+        std::vector<std::shared_ptr<Shadow>> m_Shadows;
 
         int u_SampleNum; // 阴影使用的采样点数目
         bool updateShadow; // 是否要更新阴影

@@ -100,9 +100,10 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
             m_Position.y = 0.0;
             glm::vec3 relPos = m_Position - TargetPosition;
             Position.x = relPos.x * glm::cos(deltaTheta) - relPos.z * glm::sin(deltaTheta);
-            Position.y = 0.0;
+            float lastY = m_Position.y;
             Position.z = relPos.z * glm::cos(deltaTheta) + relPos.x * glm::sin(deltaTheta);
             m_Position = TargetPosition + Position;
+            m_Position.y = lastY;
 
             // 偏航角改变
             int Sign = 1;

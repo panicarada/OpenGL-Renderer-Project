@@ -51,24 +51,24 @@ Camera::Camera(const float& AngleOfView, const glm::mat4 &Projection, const glm:
 
 void Camera::updateCameraVectors()
 {
-    if (!isOrbit)
-    {
-        m_qPitch = glm::angleAxis(m_Pitch, -m_InitRight);
-        m_qYaw = glm::angleAxis(m_Yaw, m_InitUp);
 
-        glm::quat Orientation = glm::normalize(m_qYaw * m_qPitch);// * m_qRoll);
-        glm::mat4 Rotate = glm::mat4_cast(Orientation);
+    if (m_Pitch > 2.0 * M_PI) m_Pitch -= 2.0 * M_PI;
+    if (m_Pitch < -2.0 * M_PI) m_Pitch += 2.0 * M_PI;
 
-        m_Direction = glm::normalize(Rotate * glm::vec4(m_InitDirection, 1.0f));
-        m_Right = glm::normalize(Rotate * glm::vec4(m_InitRight, 1.0f));
-        m_Up = glm::normalize(Rotate * glm::vec4(m_InitUp, 1.0f));
+    if (m_Yaw > 2.0 * M_PI) m_Yaw -= 2.0 * M_PI;
+    if (m_Yaw < -2.0 * M_PI) m_Yaw += 2.0 * M_PI;
 
-        m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Direction, m_Up);
-    }
-    else
-    {
+    m_qPitch = glm::angleAxis(m_Pitch, -m_InitRight);
+    m_qYaw = glm::angleAxis(m_Yaw, m_InitUp);
 
-    }
+    glm::quat Orientation = glm::normalize(m_qYaw * m_qPitch);// * m_qRoll);
+    glm::mat4 Rotate = glm::mat4_cast(Orientation);
+
+    m_Direction = glm::normalize(Rotate * glm::vec4(m_InitDirection, 1.0f));
+    m_Right = glm::normalize(Rotate * glm::vec4(m_InitRight, 1.0f));
+    m_Up = glm::normalize(Rotate * glm::vec4(m_InitUp, 1.0f));
+
+    m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Direction, m_Up);
 }
 
 void Camera::OnMouseAction(GLFWwindow *window, glm::vec2 Position)
@@ -82,12 +82,6 @@ void Camera::OnMouseAction(GLFWwindow *window, glm::vec2 Position)
         glm::vec2 offset = MouseSensitivity * (Position - lastPos);
         m_Yaw -= offset.x;
         m_Pitch += offset.y;
-
-        if (m_Pitch > 85.0f) m_Pitch = 85.0f;
-        if (m_Pitch < -85.0f) m_Pitch = -85.0f;
-
-        if (m_Yaw > 85.0f) m_Yaw = 85.0f;
-        if (m_Yaw < -85.0f) m_Yaw = -85.0f;
         updateCameraVectors();
     }
     lastPos = Position; // 鼠标位置还是要实时更新的
@@ -99,20 +93,28 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
     { // 敏感度过滤
         if (isOrbit)
         {
-            const static float MoveSpeed = 0.01f;
+            const static float MoveSpeed = 0.003f;
             float deltaTheta = MoveSpeed * Offset.x;
             // 绕轨道移动
             glm::vec3 Position;
+            m_Position.y = 0.0;
             glm::vec3 relPos = m_Position - TargetPosition;
-            Position.x = relPos.x * glm::cos(deltaTheta) -relPos.z * sin(deltaTheta);
-            Position.y = relPos.y;
-            Position.z = relPos.z * cos(deltaTheta) + relPos.x * sin(deltaTheta);
-            m_Position = Position + TargetPosition;
+            Position.x = relPos.x * glm::cos(deltaTheta) - relPos.z * glm::sin(deltaTheta);
+            Position.y = 0.0;
+            Position.z = relPos.z * glm::cos(deltaTheta) + relPos.x * glm::sin(deltaTheta);
+            m_Position = TargetPosition + Position;
 
-            m_ViewMatrix = glm::lookAt(m_Position, TargetPosition, glm::vec3(0.0f, 1.0f, 0.0f));
             // 偏航角改变
-//            m_Yaw += deltaTheta;
-//            updateCameraVectors();
+            int Sign = 1;
+            if (glm::dot(glm::cross(m_InitDirection, Position), m_InitUp) < 0)
+            {
+                Sign = -1;
+            }
+            m_Yaw = -M_PI + Sign * glm::acos((glm::dot(Position, m_InitDirection) / (glm::length(Position) * glm::length(m_InitDirection))));
+
+            // 俯仰角总是为0
+            m_Pitch = 0.0;
+            updateCameraVectors();
         }
     }
 
@@ -121,8 +123,6 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
     { // 敏感度过滤
         const static float MoveSpeed = 0.001f;
         m_AngleOfView = (m_AngleOfView + glm::degrees(atan(tan(glm::radians(m_AngleOfView)) / (1.0f + MoveSpeed * Offset.y))))/2.0f;
-//        std::cout << m_AngleOfView << std::endl;
-
         // 对角度进行约束
         if (m_AngleOfView >= 88.0f) m_AngleOfView = 88.0f;
         else if (m_AngleOfView <= 2.0f) m_AngleOfView = 2.0f;

@@ -49,7 +49,7 @@ struct Light
 	float Brightness; // 光源亮度
 	vec3 Attenuation; // 光源的衰减系数
 };
-const int MAX_LIGHT_NUM = 4; // 最大光源数目
+const int MAX_LIGHT_NUM = 2; // 最大光源数目
 uniform Light u_Lights[MAX_LIGHT_NUM]; // 光源集合
 // uniform int u_LightsNum; // 光源数目
 uniform vec4 u_Ambient; // 环境光
@@ -61,9 +61,10 @@ uniform int u_TexIndex; // 使用的纹理下标
 uniform sampler2DArray u_Textures; // 纹理数组
 const int MAX_TEX_NUM = 15; // 最多的纹理数
 
-uniform samplerCube u_DepthMap[MAX_LIGHT_NUM];
-//uniform samplerCube u_DepthMap_0;
-//uniform samplerCube u_DepthMap_1;
+//uniform samplerCube u_DepthMap[MAX_LIGHT_NUM];
+uniform samplerCube u_DepthMap_0;
+uniform samplerCube u_DepthMap_1;
+uniform samplerCube u_DepthMap_2;
 
 
 in vec2 v_TexCoord; // 这个Vertex对应到纹理上的坐标
@@ -114,10 +115,10 @@ uniform vec3 u_SampledPoints[MAX_SAMPLE_NUM];
 uniform float u_SampleImportance[MAX_SAMPLE_NUM];
 //uniform float u_SampleImportanceSum;
 uniform float u_SampleArea; // 采样范围
-float calculateShadow(samplerCube DepthMap, vec3 FragPosition)
+float calculateShadow(samplerCube DepthMap, vec3 FragPosition, vec3 LightPos)
 {
 	// 光线到fragment的向量
-	vec3 LightToFrag = FragPosition - u_Lights[0].Position;
+	vec3 LightToFrag = FragPosition - LightPos;
 
 	// 该gragment到光的距离就是其深度
 	float CurrentDepth = length(LightToFrag);
@@ -126,7 +127,7 @@ float calculateShadow(samplerCube DepthMap, vec3 FragPosition)
 	float ViewDistance = length(u_CameraPosition - FragPosition);
 
 	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) * u_SampleArea;
-//	float DiskRadius = 1.0 / 100.0;
+
 	vec3 Noise = 2.5 * (vec3(random(LightToFrag.x), random(CurrentDepth), random(ViewDistance)) - 0.5);
 	// 把for循环展开一点，可以加速
 	float SampleImportanceSum = 0.0;
@@ -188,7 +189,7 @@ void main()
 		Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
 
 		// 计算阴影
-		float Shadow = calculateShadow(u_DepthMap[0], v_FragPosition);
+		float Shadow = calculateShadow(u_DepthMap_0, v_FragPosition, u_Lights[i].Position);
 		Lighting += (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow);
 	}
 	i = 1;
@@ -212,14 +213,9 @@ void main()
 		Specular += SpecularStrength * Spec * u_Lights[i].Color * u_Lights[i].Brightness * LightAttenuation[i];
 
 		// 计算阴影
-		float Shadow = calculateShadow(u_DepthMap[1], v_FragPosition);
-//		float Shadow = 0.0;
-//		Lighting += (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow);
-
-		FragColor = Shadow * vec4(1.0);
-		return ;
+		float Shadow = calculateShadow(u_DepthMap_1, v_FragPosition, u_Lights[i].Position);
+		Lighting += (Diffuse * u_Material.Diffuse + Specular * 0.5 * u_Material.Specular) * (1.0 - Shadow);
 	}
-
 
 	Lighting = clamp(Lighting, 0.0, 1.0);
 
@@ -229,6 +225,5 @@ void main()
 	{
 		Color = texture(u_Textures, vec3(v_TexCoord, u_TexIndex));
 	}
-	FragColor = (u_Ambient * 0.5 * u_Material.Ambient
-				 + Lighting) * Color;
+	FragColor = (u_Ambient * 0.5 * u_Material.Ambient + Lighting) * Color;
 }

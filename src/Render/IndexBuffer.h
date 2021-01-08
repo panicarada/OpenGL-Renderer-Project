@@ -17,7 +17,6 @@ public:
         : m_Count(Count)
     { // isStatic表示数据是否不能通过bufferSubData重新写入vertex
         ASSERT(sizeof(unsigned int) == sizeof(GLuint));
-
         DebugCall(glGenBuffers(1, &m_RendererID));
         DebugCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID));
         DebugCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, Count * sizeof(unsigned int), Data, isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW));
@@ -35,7 +34,6 @@ public:
     {
         DebugCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
-
     inline unsigned int getCount() const
     {
         return m_Count;

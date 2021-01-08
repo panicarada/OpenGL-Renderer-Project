@@ -123,13 +123,16 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
     if (std::abs(Offset.y) > 0.1 && m_Tag == "Perspective")
     { // 敏感度过滤
         const static float MoveSpeed = 0.001f;
-        m_AngleOfView = (m_AngleOfView + glm::degrees(atan(tan(glm::radians(m_AngleOfView)) / (1.0f + MoveSpeed * Offset.y))))/2.0f;
+        float Distance = glm::dot(TargetPosition - m_Position, m_Direction) / glm::length(m_Direction);
+
+
+        m_AngleOfView = glm::degrees(atan(tan(glm::radians(m_AngleOfView)) * Distance / (Distance - MoveSpeed * Offset.y)));
         // 对角度进行约束
         if (m_AngleOfView >= 88.0f) m_AngleOfView = 88.0f;
         else if (m_AngleOfView <= 2.0f) m_AngleOfView = 2.0f;
         else
         {
-            m_Position -= (float)Offset.y * MoveSpeed * m_Direction;
+            m_Position -= (float)Offset.y * MoveSpeed * glm::normalize(m_Direction);
         }
         m_Projection = glm::perspective(glm::radians(m_AngleOfView), WINDOW_RATIO, ZNEAR, ZFAR);
 

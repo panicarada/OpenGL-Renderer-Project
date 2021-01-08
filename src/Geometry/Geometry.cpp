@@ -11,7 +11,6 @@ auto Geometry::ConstructorMap = std::unordered_map<std::string, std::function<st
 
 void Geometry::draw() const
 {
-    Renderer renderer;
     glm::mat4 Model = this->getModelMatrix();
     glm::mat4 Projection = m_Camera->getProjectionMatrix();
     glm::mat4 View = m_Camera->getViewMatrix();
@@ -33,7 +32,7 @@ void Geometry::draw() const
     { // 负数下标表示没有纹理
         m_Shader->setUniform1i("u_TexIndex", -1);
     }
-    renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
+    Renderer::draw(m_VAO, m_IndexBuffer, m_Shader);
 }
 
 // 根据旋转角度重建旋转矩阵

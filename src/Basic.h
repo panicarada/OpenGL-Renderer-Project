@@ -21,11 +21,6 @@
 
 #define __DEBUG
 
-// shader代码中材质数组的大小
-#define SLOT_NUM 15
-
-// 电脑核数
-#define CORE_NUM 8
 
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 960
@@ -55,7 +50,7 @@ static void ClearError()
 }
 static bool LogCall(const char* function, const char* file, int line)
 {
-    while (GLenum error = glGetError())
+    while (auto error = glGetError())
     {
         std::cout << "[OpenGL Error] (" << error << ")" <<
                   function << "  " << file << ":" << line << std::endl;
@@ -71,9 +66,9 @@ static unsigned int getSizeofType(unsigned int Type)
     {
         case GL_FLOAT:          return sizeof(GLfloat);
         case GL_UNSIGNED_INT:   return sizeof(GLuint);
-        case GL_UNSIGNED_BYTE:  return sizeof(GL_BYTE);
+        case GL_UNSIGNED_BYTE:  return sizeof(GLbyte);
+        default: ASSERT(false);
     }
-    ASSERT(false);
     return 0;
 }
 
@@ -143,7 +138,7 @@ namespace ImGui
 
     static int InputTextCallback(ImGuiInputTextCallbackData* data)
     {
-        InputTextCallback_UserData* user_data = (InputTextCallback_UserData*)data->UserData;
+        auto user_data = (InputTextCallback_UserData*)data->UserData;
         if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
         {
             // Resize string callback
@@ -163,12 +158,12 @@ namespace ImGui
     }
 
     // Because text input needs dynamic resizing, we need to setup a callback to grow the capacity
-    static IMGUI_API bool  InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL)
+    static IMGUI_API bool  InputText(const char* label, std::string* str, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = nullptr, void* user_data = nullptr)
     {
         IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
         flags |= ImGuiInputTextFlags_CallbackResize;
 
-        InputTextCallback_UserData cb_user_data;
+        auto cb_user_data = InputTextCallback_UserData();
         cb_user_data.Str = str;
         cb_user_data.ChainCallback = callback;
         cb_user_data.ChainCallbackUserData = user_data;

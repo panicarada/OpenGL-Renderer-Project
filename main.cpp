@@ -30,9 +30,6 @@ test::Test* currentTest = nullptr;
 
 int main()
 {
-    // 设置并行数目
-    omp_set_num_threads(CORE_NUM);
-
     Basic::init();
 
     // Initialise GLFW
@@ -147,8 +144,6 @@ int main()
 
 
 
-
-    Renderer renderer;
     float lastTime = 0.0f;
 
     // 注册鼠标回调函数
@@ -181,7 +176,7 @@ int main()
     while( !glfwWindowShouldClose(window) )
     {
         DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f))
-        renderer.clear();
+        Renderer::clear();
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

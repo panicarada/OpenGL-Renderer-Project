@@ -80,10 +80,10 @@ public:
     virtual std::string getClassName() const = 0; // 返回几何物体名字
 protected:
     /* 渲染要用的数据结构 */
-    std::unique_ptr<VertexArray> m_VAO;
-    std::unique_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
-    std::unique_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
-    std::unique_ptr<VertexBufferLayout> m_Layout;
+    std::shared_ptr<VertexArray> m_VAO;
+    std::shared_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
+    std::shared_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
+    std::shared_ptr<VertexBufferLayout> m_Layout;
     std::vector<unsigned int> m_Indices;
 
     std::shared_ptr<Camera> m_Camera;

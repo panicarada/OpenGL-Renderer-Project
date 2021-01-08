@@ -13,16 +13,16 @@
 class Renderer
 {
 public:
-    void draw(const VertexArray& va,
-              const IndexBuffer& ib,
-              const std::shared_ptr<Shader>& shader) const
+    static void draw(const std::shared_ptr<VertexArray>& va,
+                     const std::shared_ptr<IndexBuffer>& ib,
+                     const std::shared_ptr<Shader>& shader)
     {
         shader->bind();
-        va.bind();
-        ib.bind();
-        DebugCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
+        va->bind();
+        ib->bind();
+        DebugCall(glDrawElements(GL_TRIANGLES, ib->getCount(), GL_UNSIGNED_INT, nullptr));
     }
-    void clear()
+    static void clear()
     {
         DebugCall(glClear(GL_COLOR_BUFFER_BIT));
     }

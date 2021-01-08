@@ -56,7 +56,7 @@ void Sphere::updateDrawData()
     std::mt19937 generator(rd());
     std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
     {// 电脑是八核的
-        #pragma omp parallel for num_thread(CORE_NUM)
+        #pragma omp parallel for
         for (int i = 0; i < m_VerticalSteps; ++i)
         {
             for (int j = 0; j < m_HorizontalSteps; ++j)

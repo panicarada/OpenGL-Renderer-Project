@@ -52,7 +52,7 @@ void Cylinder::updateDrawData()
 
     // 第一部分，放入Vertex
     {
-        #pragma omp parallel for num_thread(NUM_CORE)
+        #pragma omp parallel for
         for (int i = 0;i < m_Steps; ++i)
         {
             double Theta = M_PI * 2.0 * i / (m_Steps - 1);
@@ -107,7 +107,7 @@ void Cylinder::updateDrawData()
     // 第二部分，放入index
     // 圆上的点
     {
-        #pragma omp parallel for num_thread(CORE_NUM)
+        #pragma omp parallel for
         for (int i = 0;i < m_Steps-1; ++i)
         {
            m_Indices[i*6 + 0] = Center1;
@@ -130,7 +130,7 @@ void Cylinder::updateDrawData()
     int Offset = 6 * m_Steps;
     // 侧面的点
     {
-        #pragma omp parallel for num_thead(CORE_NUM)
+        #pragma omp parallel for
         for (int i = 0; i < m_Steps-1; ++i)
         {
            m_Indices[6*i + Offset + 0] = (i << 2) + 1; // 4i + 1

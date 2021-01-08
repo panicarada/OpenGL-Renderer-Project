@@ -67,13 +67,12 @@ namespace test
         DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
         DebugCall(glClear(GL_COLOR_BUFFER_BIT));
 
-        Renderer renderer;
         {
             glm::mat4 model = glm::mat4(1.0f);
             glm::mat4 mvp = m_Proj * m_View * model;
             m_Shader->bind();
             m_Shader->setUniformMat4f("u_MVP", mvp);
-            renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
+            Renderer::draw(m_VAO, m_IndexBuffer, m_Shader);
         }
     }
 

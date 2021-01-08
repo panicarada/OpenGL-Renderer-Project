@@ -40,39 +40,39 @@ public:
         return m_RendererID;
     }
 
-    void setUniform1i(const std::string Name, int Value);
-    void setUniform1iv(const std::string Name, const int Count, const int *Value);
-    void setUniform1f(const std::string Name, float Value);
-    inline void setUniform1fv(const std::string Name, const std::vector<float>& Value)
+    void setUniform1i(const std::string& Name, int Value);
+    void setUniform1iv(const std::string& Name, const int Count, const int *Value);
+    void setUniform1f(const std::string& Name, float Value);
+    inline void setUniform1fv(const std::string& Name, const std::vector<float>& Value)
     {
         DebugCall(glUniform1fv(getUniformLocation(Name), Value.size(), &Value[0]));
     }
-    inline void setUniformMat4fv(const std::string Name, const std::vector<glm::mat4>& Value)
+    inline void setUniformMat4fv(const std::string& Name, const std::vector<glm::mat4>& Value)
     {
         DebugCall(glUniformMatrix4fv(getUniformLocation(Name), Value.size(), false,
                                      reinterpret_cast<const GLfloat *>(&Value[0][0])));
     }
 
-    void setUniform3f(const std::string Name, float v0, float v1, float v2);
-    void setUniform3f(const std::string Name, const glm::vec3& v)
+    void setUniform3f(const std::string& Name, float v0, float v1, float v2);
+    void setUniform3f(const std::string& Name, const glm::vec3& v)
     {
         setUniform3f(Name, v[0], v[1], v[2]);
     }
-    inline void setUniform3fv(const std::string Name, const std::vector<glm::vec3> &Value)
+    inline void setUniform3fv(const std::string& Name, const std::vector<glm::vec3> &Value)
     {
         DebugCall(glUniform3fv(getUniformLocation(Name), Value.size(), &Value[0][0]));
     }
 
-    void setUniform4f(const std::string Name, float v0, float v1, float v2, float v3);
-    inline void setUniform4f(const std::string Name, const glm::vec4& v)
+    void setUniform4f(const std::string& Name, float v0, float v1, float v2, float v3);
+    inline void setUniform4f(const std::string& Name, const glm::vec4& v)
     {
         DebugCall(glUniform4f(getUniformLocation(Name), v[0], v[1], v[2], v[3]));
     }
-    void setUniformMat4f(const std::string Name, const glm::mat4& matrix);
+    void setUniformMat4f(const std::string& Name, const glm::mat4& matrix);
 
 private:
     int getUniformLocation(const std::string& name);
-    ShaderProgramSource parseShader(const std::string &File);
-    unsigned int compileShader(unsigned int type, const std::string &source);
-    unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader, const std::string &geometryShader);
+    ShaderProgramSource parseShader(const std::string& File);
+    unsigned int compileShader(unsigned int type, const std::string& source);
+    unsigned int createShader(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
 };

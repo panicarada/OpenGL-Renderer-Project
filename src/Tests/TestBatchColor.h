@@ -35,11 +35,11 @@ namespace test
         glm::vec4 m_ColorA;
         glm::vec4 m_ColorB;
 
-        std::unique_ptr<VertexArray> m_VAO;
-        std::unique_ptr<IndexBuffer> m_IndexBuffer;
+        std::shared_ptr<VertexArray> m_VAO;
+        std::shared_ptr<IndexBuffer> m_IndexBuffer;
         std::shared_ptr<Shader> m_Shader;
-        std::unique_ptr<VertexBuffer> m_VertexBuffer;
-        std::unique_ptr<VertexBufferLayout> m_Layout;
+        std::shared_ptr<VertexBuffer> m_VertexBuffer;
+        std::shared_ptr<VertexBufferLayout> m_Layout;
 
         glm::mat4 m_Proj;
         glm::mat4 m_View;

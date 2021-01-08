@@ -131,33 +131,33 @@ void Shader::unbind() const
     DebugCall(glUseProgram(0));
 }
 
-void Shader::setUniform1i(const std::string Name, int Value)
+void Shader::setUniform1i(const std::string& Name, int Value)
 {
     DebugCall(glUniform1i(getUniformLocation(Name), Value));
 }
 
-void Shader::setUniform1iv(const std::string Name, const int Count, const int *Value)
+void Shader::setUniform1iv(const std::string& Name, const int Count, const int *Value)
 {
     DebugCall(glUniform1iv(getUniformLocation(Name), Count, Value));
 }
 
-void Shader::setUniform1f(const std::string Name, float Value)
+void Shader::setUniform1f(const std::string& Name, float Value)
 {
     DebugCall(glUniform1f(getUniformLocation(Name), Value));
 }
 
-void Shader::setUniform4f(const std::string Name, float v0, float v1, float v2, float v3)
+void Shader::setUniform4f(const std::string& Name, float v0, float v1, float v2, float v3)
 {
     DebugCall(glUniform4f(getUniformLocation(Name), v0, v1, v2, v3));
 }
 
-void Shader::setUniformMat4f(const std::string Name, const glm::mat4 &matrix)
+void Shader::setUniformMat4f(const std::string& Name, const glm::mat4 &matrix)
 {
     // &matrix[0][0]表示第一个元素的地址，之后OpenGL会读取连续的16个数
     DebugCall(glUniformMatrix4fv(getUniformLocation(Name), 1, GL_FALSE, &matrix[0][0]));
 }
 
-void Shader::setUniform3f(const std::string Name, float v0, float v1, float v2)
+void Shader::setUniform3f(const std::string& Name, float v0, float v1, float v2)
 {
     DebugCall(glUniform3f(getUniformLocation(Name), v0, v1, v2));
 }

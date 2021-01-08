@@ -66,7 +66,6 @@ void test::TestTexture::OnRender()
     DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
     DebugCall(glClear(GL_COLOR_BUFFER_BIT));
 
-    Renderer renderer;
     std::shared_ptr<TextureArray> texture;
     static int count = 0;
     if (count & 0b1000000)
@@ -104,7 +103,7 @@ void test::TestTexture::OnRender()
 //        m_Shader->setUniform1i("u_TexIndex", texture->getSlotID());
     }
     m_Shader->bind();
-    renderer.draw(*m_VAO, *m_IndexBuffer, m_Shader);
+    Renderer::draw(m_VAO, m_IndexBuffer, m_Shader);
 
     if (texture)
     {

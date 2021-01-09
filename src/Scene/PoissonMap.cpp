@@ -94,7 +94,7 @@ std::vector<glm::vec3> PoissonMap::genPoissonPoints(int NumPoints, int SearchThr
 
 
 
-#define __DEBUG_POISSON_MAP
+//#define __DEBUG_POISSON_MAP
 // debug，把采样点写入文件
 
 #ifdef __DEBUG_POISSON_MAP

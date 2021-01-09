@@ -5,19 +5,8 @@
 #include <string>
 #include "Renderer.h"
 
-#include "Tests/TestSphere.h"
-#include "Tests/TestBatchColor.h"
-#include "Tests/TestTexture.h"
-#include "Tests/TestCube.h"
-#include "Tests/TestCylinder.h"
-#include "Tests/TestGeometry.h"
-#include "Tests/TestDepth.h"
-#include "Tests/TestShadowPCSS.h"
-#include "Tests/TestShadowVSM.h"
-
 #include "Scene.h"
 
-#include "TestShadow.h"
 
 std::shared_ptr<Camera> camera = nullptr;
 test::Test* currentTest = nullptr;
@@ -128,20 +117,7 @@ int main()
     auto testMenu = new test::TestMenu(currentTest);
     currentTest = testMenu;
 
-
-    testMenu->RegisterTest<test::TestBatchColor>("Batch Color");
-    testMenu->RegisterTest<test::TestTexture>("Texture");
-    testMenu->RegisterTest<test::TestSphere>("Sphere");
-    testMenu->RegisterTest<test::TestCube>("Cube");
-    testMenu->RegisterTest<test::TestCylinder>("Cylinder");
-    testMenu->RegisterTest<test::TestGeometry>("Geometry");
-    testMenu->RegisterTest<test::TestDepth>("Depth");
-    testMenu->RegisterTest<test::TestShadow>("Shadow");
-    testMenu->RegisterTest<test::TestShadowPCSS>("PCSS");
-    testMenu->RegisterTest<test::TestShadowVSM>("VSM");
     testMenu->RegisterTest<test::Scene>("Scene");
-
-
 
 
     float lastTime = 0.0f;

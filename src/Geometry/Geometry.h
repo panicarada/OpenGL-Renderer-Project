@@ -28,9 +28,11 @@
 class Geometry
 {
 protected:
+    /* save相关 */
     std::function<bool(std::ofstream&)> SupplementarySave = [](std::ofstream&) -> bool{
         return true; // 如果子类需要额外储存其他信息，就更改这个函数指针
     };
+    /* load相关 */
     std::function<void(std::ifstream&)> SupplementaryLoad = [](std::ifstream&)
     { // 如果子类需要额外读取其他信息，就更改这个函数指针
 
@@ -58,7 +60,7 @@ public:
     // 根据旋转角度重建旋转矩阵
     void updateRotation();
 
-    virtual void updateDrawData() = 0; // 更新用于绘制的数据
+    virtual void updateDrawData(){}; // 更新用于绘制的数据
 
     inline const glm::mat4 getModelMatrix() const
     {
@@ -75,6 +77,10 @@ public:
     {
         m_VAO = std::make_unique<VertexArray>();
         m_Layout = std::make_unique<VertexBufferLayout>();
+        m_Layout->Push<float>(3); // 点坐标
+        m_Layout->Push<float>(3); // 法向量
+//        m_Layout->Push<float>(4); // 颜色
+        m_Layout->Push<float>(2); // 纹理坐标
         updateRotation();
     }
     virtual std::string getClassName() const = 0; // 返回几何物体名字
@@ -84,26 +90,23 @@ protected:
     std::shared_ptr<VertexBuffer> m_VertexBuffer; // 存放Vertex的结构
     std::shared_ptr<IndexBuffer> m_IndexBuffer; // 描述绘制三角形所用Vertex的顺序
     std::shared_ptr<VertexBufferLayout> m_Layout;
+    // 为了导出obj文件，还是要把Vertices和Indices存起来
     std::vector<unsigned int> m_Indices;
-
+    std::vector<Vertex> m_Vertices;
+    /* 相机 */
     std::shared_ptr<Camera> m_Camera;
-// 为了导出obj文件，还是要把Vertices和Indices存起来
-std::vector<Vertex> m_Vertices;
 public:
     std::shared_ptr<Shader> m_Shader;
-
 private:
     glm::quat m_qPitch; // 俯仰角对应四元数
     glm::quat m_qYaw; // 偏航角对应四元数
     glm::quat m_qRoll; // 滚转角对应四元数
 public:
     std::string Tag = "NONE"; // 关于该几何体的一些描述
-
     Material m_Material; // 材质
     glm::vec4 m_Color; // 颜色
     int m_TextureSlot; // 纹理
     std::string m_TexturePath; // 纹理素材路径
-
     /* 几何参数 */
     // 三个方向的拉伸，相对于几何物体的坐标
     Scale m_Scale;

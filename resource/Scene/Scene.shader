@@ -2,14 +2,14 @@
 #version 330 core
 layout(location = 0) in vec4 Position;
 layout(location = 1) in vec4 Normal;
-layout(location = 2) in vec4 Color;
+// layout(location = 2) in vec4 Color;
 layout(location = 3) in vec2 TexCoord;
 
 uniform mat4 u_Model;
 uniform mat4 u_Projection;
 uniform mat4 u_View;
 
-out vec4 v_Color;
+// out vec4 v_Color;
 out vec3 v_Normal;
 out vec3 v_FragPosition;
 out vec2 v_TexCoord;
@@ -18,7 +18,7 @@ void main()
 {
 	gl_Position = u_Projection * u_View * u_Model * Position;
 	v_FragPosition = vec3(u_Model * Position);
-	v_Color = Color;
+	// v_Color = Color;
 	v_Normal = mat3(transpose(inverse(u_Model))) * vec3(Normal);
 	v_TexCoord = TexCoord;
 }
@@ -28,7 +28,8 @@ void main()
 #version 330 core
 layout(location = 0) out vec4 FragColor;
 
-in vec4 v_Color;
+// in vec4 v_Color;
+uniform vec4 u_Color;
 in vec3 v_Normal;
 in vec3 v_FragPosition;
 
@@ -219,7 +220,8 @@ void main()
 
 	Lighting = clamp(Lighting, 0.0, 1.0);
 
-	vec4 Color = v_Color;
+	// vec4 Color = v_Color;
+	vec4 Color = u_Color;
 	// 如果有纹理
 	if (u_TexIndex >= 0 && u_TexIndex < MAX_TEX_NUM)
 	{

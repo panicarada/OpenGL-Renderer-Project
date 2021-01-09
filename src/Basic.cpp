@@ -46,7 +46,6 @@ namespace Basic
             while (std::getline(File, Line))
             { // 遍历每一行
                 std::stringstream ss(Line);
-//                std::cout << Line << std::endl;
                 std::vector<std::string> Temp;
                 std::string Word;
                 ss >> Word;

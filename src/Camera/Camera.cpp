@@ -4,11 +4,8 @@
 
 #include "Camera.h"
 
-#include "glm/gtx/transform.hpp"
 #include "glm/gtc/quaternion.hpp"
-#include "glm/gtx/quaternion.hpp"
 #include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
 
 
 void Camera::OnKeyAction(GLFWwindow *Window, float deltaTime)
@@ -89,6 +86,7 @@ void Camera::OnMouseAction(GLFWwindow *window, glm::vec2 Position)
 
 void Camera::OnScrollAction(const glm::vec2&& Offset)
 {
+    /* Orbit */
     if (std::abs(Offset.x) > 0.1 && m_Tag == "Perspective")
     { // 敏感度过滤
         if (isOrbit)
@@ -104,7 +102,6 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
             Position.z = relPos.z * glm::cos(deltaTheta) + relPos.x * glm::sin(deltaTheta);
             m_Position = TargetPosition + Position;
             m_Position.y = lastY;
-
             // 偏航角改变
             int Sign = 1;
             if (glm::dot(glm::cross(m_InitDirection, Position), m_InitUp) < 0)
@@ -122,17 +119,17 @@ void Camera::OnScrollAction(const glm::vec2&& Offset)
     /* zoom */
     if (std::abs(Offset.y) > 0.1 && m_Tag == "Perspective")
     { // 敏感度过滤
-        const static float MoveSpeed = 0.001f;
+        const static float MoveSpeed = 0.0025f;
         float Distance = glm::dot(TargetPosition - m_Position, m_Direction) / glm::length(m_Direction);
+        float deltaDistance = MoveSpeed * Offset.y;
 
-
-        m_AngleOfView = glm::degrees(atan(tan(glm::radians(m_AngleOfView)) * Distance / (Distance - MoveSpeed * Offset.y)));
+        m_AngleOfView = glm::degrees(atan(tan(glm::radians(m_AngleOfView)) * Distance / (Distance - deltaDistance)));
         // 对角度进行约束
         if (m_AngleOfView >= 88.0f) m_AngleOfView = 88.0f;
         else if (m_AngleOfView <= 2.0f) m_AngleOfView = 2.0f;
         else
         {
-            m_Position -= (float)Offset.y * MoveSpeed * glm::normalize(m_Direction);
+            m_Position += (float)deltaDistance * glm::normalize(m_Direction);
         }
         m_Projection = glm::perspective(glm::radians(m_AngleOfView), WINDOW_RATIO, ZNEAR, ZFAR);
 

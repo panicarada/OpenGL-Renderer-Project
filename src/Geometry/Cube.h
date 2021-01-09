@@ -17,13 +17,13 @@ public:
          const Material& material = {glm::vec4(1.0f), glm::vec4(1.0f), glm::vec4(1.0f), 1.0f},
          const Rotation& rotation = {0.0f, 0.0f, 0.0f},
          const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f});
-    void updateDrawData() override;
+    void init();
     inline std::string getClassName() const override
     {
         return "Geometry::Cube";
     }
 private:
-    inline std::vector<Vertex> getSquare(const glm::vec3 Normal)
+    inline std::vector<Vertex> getSquare(const glm::vec3& Normal)
     {
         // 随机数
         std::random_device rd;
@@ -35,91 +35,91 @@ private:
         if (Normal.x > 0)
         {
             Vertices.push_back({glm::vec3(1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         else if (Normal.x < 0)
         {
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         else if (Normal.y > 0)
         {
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         else if (Normal.y < 0)
         {
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         else if (Normal.z > 0)
         {
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, -1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, 1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         else if (Normal.z < 0)
         {
             Vertices.push_back({glm::vec3(-1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 0.0f)});
             Vertices.push_back({glm::vec3(-1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 0.0f)});
             Vertices.push_back({glm::vec3(1.0f, 1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(1.0f, 1.0f)});
             Vertices.push_back({glm::vec3(1.0f, -1.0f, -1.0f), Normal,
-                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
+//                                m_Color + glm::vec4(dis(gen), dis(gen), dis(gen), 0.0f),
                                 glm::vec2(0.0f, 1.0f)});
         }
         return Vertices;

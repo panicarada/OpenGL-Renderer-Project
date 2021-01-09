@@ -1,6 +1,6 @@
 #include "Shadow.h"
 
-#include <random> // 随机采样
+#include "PoissonMap.h" // 随机采样
 
 
 // 注意！！！！长宽要一样
@@ -106,35 +106,48 @@ void Shadow::render(const std::set<std::shared_ptr<Geometry>> &GeometrySet,
     glViewport(SavedViewPort[0], SavedViewPort[1], SavedViewPort[2], SavedViewPort[3]);
 }
 
-// 为被采样的shader设置uniform量，用于阴影滤波的采样
-void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
-{
-    const int sampleRange = 1; // 总采样数目是(2 * sampleRange + 1)^3
-    float ImportanceSum = 0;
-    int Counter = 0;
-    const float Factor = glm::exp(M_PI/2.0f)/2.0f;
-    const float EulerConstant = 0.577215664901532;
-    // 随机数
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    // 正态分布
-    std::normal_distribution<> dis(-M_PI * 2.0f, M_PI * 2.0f);
-    for (int i = -sampleRange; i <= sampleRange; ++ i)
+    // 为被采样的shader设置uniform量，用于阴影滤波的采样
+    void Shadow::setSamples(const std::shared_ptr<Shader> &sampledShader)
     {
-        for (int j = -sampleRange; j <= sampleRange; ++j)
+        const int sampleRange = 1; // 总采样数目是(2 * sampleRange + 1)^3
+        float ImportanceSum = 0;
+        int Counter = 0;
+        const float Factor = glm::exp(M_PI / 2.0f) / 2.0f;
+        const float EulerConstant = 0.577215664901532;
+
+        // 用Poisson Map来生成三维随机点
+        static bool isInit = false;
+        const int NumPoints = 400;
+        static std::vector<glm::vec3> SamplePoints;
+        if (!isInit)
         {
-            for (int k = -sampleRange; k <= sampleRange; ++k)
+            PoissonMap Map;
+            SamplePoints = Map.genPoissonPoints(NumPoints);
+            for (auto & SamplePoint : SamplePoints)
             {
-                // 采样点在一个立方格内
-                auto Point = glm::vec3(dis(gen), dis(gen), dis(gen));
-                sampledShader->setUniform3f("u_SampledPoints[" + std::to_string(Counter) + "]", Point);
-                // 离得越远，重要度越低
-                float Importance = 1.0f / (glm::pow(glm::length(Point),
-                                                    glm::exp(EulerConstant + dis(gen)/20.0)) + Factor);
-                sampledShader->setUniform1f("u_SampleImportance[" + std::to_string(Counter) + "]", Importance);
-                ImportanceSum += Importance;
-                Counter ++;
+                SamplePoint = (float)M_PI * 4.0f * (SamplePoint - glm::vec3(1.0f));
+            }
+            isInit = true;
+        }
+
+        // 随机数
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<> dis(0, NumPoints-1);
+
+        for (int i = -sampleRange; i <= sampleRange; ++i)
+        {
+            for (int j = -sampleRange; j <= sampleRange; ++j)
+            {
+                for (int k = -sampleRange; k <= sampleRange; ++k)
+                {
+                    auto Point = SamplePoints[dis(gen)];
+                    sampledShader->setUniform3f("u_SampledPoints[" + std::to_string(Counter) + "]", Point);
+                    // 离得越远，重要度越低
+                    float Importance = 1.0f / (glm::pow(glm::length(Point), glm::exp(EulerConstant) + Factor));
+                    sampledShader->setUniform1f("u_SampleImportance[" + std::to_string(Counter) + "]", Importance);
+                    Counter++;
+                }
             }
         }
     }
-}

@@ -24,6 +24,9 @@ void Geometry::draw() const
     m_Shader->setUniform4f("u_Material.Specular", m_Material.Specular);
     m_Shader->setUniform1f("u_Material.Highlight", m_Material.Highlight);
 
+    // 设置颜色
+    m_Shader->setUniform4f("u_Color", m_Color);
+
     if (m_TextureSlot >= 0)
     { // 如果有纹理，就设置纹理
         m_Shader->setUniform1i("u_TexIndex", m_TextureSlot);
@@ -41,7 +44,6 @@ void Geometry::updateRotation()
     m_qPitch = glm::angleAxis(glm::radians(m_Rotation.Pitch), glm::vec3(1.0f, 0.0f, 0.0f));
     m_qYaw = glm::angleAxis(glm::radians(m_Rotation.Yaw), glm::vec3(0.0f, 1.0f, 0.0f));
     m_qRoll = glm::angleAxis(glm::radians(m_Rotation.Roll), glm::vec3(0.0f, 0.0f, 1.0f));
-
     glm::quat Orientation = glm::normalize(m_qPitch * m_qYaw * m_qRoll);
     m_RotateMatrix = glm::mat4_cast(Orientation);
 }

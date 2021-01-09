@@ -47,20 +47,20 @@ public:
     }
     void OnMouseAction(GLFWwindow* window, glm::vec2 Position);
     void OnKeyAction(GLFWwindow* window, int key, int scancode, int action, int mods); // 相机移动
-
     void OnScrollAction(const glm::vec2&& Offset);
 private:
     void updateCameraVectors(); // 俯仰角或者偏航角改变后，更新相机向量
 public:
-    bool isFPS;
+    bool isFPS; // 是否处于漫游模式（鼠标隐藏，鼠标的移动是镜头的移动）
     bool isOrbit; // 是否是Orbit模式（只能绕着观察物体转圈和zoom）
     glm::vec3 TargetPosition; // Orbit/Pan模式下，观察物体的坐标
 protected:
     std::string m_Tag; // 描述相机的标签（比如Orthogonal / Perspective）
-
     glm::mat4 m_Projection; // 投影矩阵
     glm::mat4 m_ViewMatrix; // 视图矩阵
-    glm::vec3 m_Position;
+    glm::vec3 m_Position; // 相机位置
+
+    /* 相机坐标系标准向量 */
     glm::vec3 m_InitDirection;
     glm::vec3 m_Direction;
     glm::vec3 m_InitUp;
@@ -68,11 +68,11 @@ protected:
     glm::vec3 m_InitRight;
     glm::vec3 m_Right;
 
+    /* 旋转 */
     glm::quat m_qPitch; // 俯仰角对应四元数
     glm::quat m_qYaw; // 偏航角对应四元数
     float m_Pitch; // 俯仰角，角度制，相当于绕InitRight的旋转角
     float m_Yaw; // 偏航角，角度制，相当于绕InitUp的旋转角
-
     float InitAngleOfView; // 原始的视角大小，用于Reset
     float m_AngleOfView; // 视角大小，角度制（透视投影中）
 };

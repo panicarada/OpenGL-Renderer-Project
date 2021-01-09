@@ -8,12 +8,6 @@ ObjLoader::ObjLoader(const std::shared_ptr<Camera> &camera, const std::shared_pt
                      const glm::vec3 &Position, const Material &material, const Rotation &rotation, const Scale &Scale)
         : Geometry(camera, shader, Position, material, rotation, Scale)
 {
-    m_Layout->Push<float>(3); // 点坐标
-    m_Layout->Push<float>(3); // 法向量
-    m_Layout->Push<float>(4); // 颜色
-    m_Layout->Push<float>(2); // 纹理坐标
-
-
     SupplementarySave = [&](std::ofstream& Out) -> bool{
         Out << m_FileName << std::endl;
         return true;
@@ -37,7 +31,6 @@ ObjLoader::ObjLoader(const std::shared_ptr<Camera> &camera, const std::shared_pt
 void ObjLoader::loadOBJ(const std::string &FileName)
 {
     std::stringstream ss;
-//    std::ifstream inFile("../resource/Obj/" + FileName + ".obj");
     std::ifstream inFile("../resource/Obj/" + FileName);
 
     m_FileName = FileName;
@@ -147,7 +140,6 @@ void ObjLoader::loadOBJ(const std::string &FileName)
             m_Vertices[i].TexCoord = glm::vec2(0.0f);
         }
         m_Vertices[i].Normal = Normals[NormalIndices[i] - 1];
-        m_Vertices[i].Color = glm::vec4(1.0f);
     }
 
     // DEBUG
@@ -157,13 +149,5 @@ void ObjLoader::loadOBJ(const std::string &FileName)
     // Buffer分配空间
     m_VertexBuffer = std::make_unique<VertexBuffer>(&m_Vertices[0], m_Vertices.size() * sizeof(Vertex), true);
     m_IndexBuffer = std::make_unique<IndexBuffer>( &m_Indices[0], m_Indices.size(), true);
-    // 绑定VAO
-//    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, Indices.size() * sizeof(unsigned int), &Indices[0]);
-//    glBufferSubData(GL_ARRAY_BUFFER, 0, Vertices.size() * sizeof(Vertex), &Vertices[0]); // No allocation, only send data
-    m_VAO->addBuffer(*m_VertexBuffer, *m_Layout);
-}
-
-void ObjLoader::updateDrawData()
-{
-
+    m_VAO->addBuffer(m_VertexBuffer, m_Layout);
 }

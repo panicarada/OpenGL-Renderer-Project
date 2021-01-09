@@ -11,7 +11,7 @@
  *      isCircle: 采样点在圆形内还是在方形内
  *      MinGap: 相邻采样点之间最小的距离
  */
-std::vector<glm::vec2> PoissonMap::genPoissonPoints(int NumPoints, int SearchThreshold, bool isCircle, float MinGap)
+std::vector<glm::vec3> PoissonMap::genPoissonPoints(int NumPoints, int SearchThreshold, bool isCircle, float MinGap)
 {
     /* 随机数产生器 */
     std::random_device rd;
@@ -22,22 +22,26 @@ std::vector<glm::vec2> PoissonMap::genPoissonPoints(int NumPoints, int SearchThr
     {
         MinGap = 1.0f / glm::sqrt(float(NumPoints));
     }
-    std::vector<glm::vec2> SamplePoints; // 真正返回的采样点
-    std::vector<glm::vec2> ProcessList; // push的都是采样点，但是会不断弹出，找到采样点附近的点进行搜索
+    std::vector<glm::vec3> SamplePoints; // 真正返回的采样点
+    std::vector<glm::vec3> ProcessList; // push的都是采样点，但是会不断弹出，找到采样点附近的点进行搜索
 
     float CellSize = MinGap / glm::sqrt(2.0f);
 
     // 矩形被分为方格，每个方格的宽度是CellSize
     int GridWidth;
-    int GridHeight = GridWidth = glm::ceil(1.0f / CellSize);
-    Grid grid(GridWidth, GridHeight, CellSize); // 随机点网格
-    glm::vec2 Start; // 迭代开始的随机点
+    int GridDepth;
+    int GridHeight = GridDepth = GridWidth = glm::ceil(1.0f / CellSize);
+
+    Grid grid(GridWidth, GridHeight, GridDepth, CellSize); // 随机点网格
+
+
+    glm::vec3 Start; // 迭代开始的随机点
     do
     {
-        Start = glm::vec2(dis(gen), dis(gen));
+        Start = glm::vec3(dis(gen), dis(gen), dis(gen));
         if (isCircle)
-        { // 此时需要在以(0.5, 0.5)为圆心，0.5为半径的圆内
-            if (glm::distance(Start, glm::vec2(0.5f)) <= 0.5f)
+        { // 此时需要在以(0.5, 0.5, 0.5)为圆心，0.5为半径的圆内
+            if (glm::distance(Start, glm::vec3(0.5f)) <= 0.5f)
             {
                 break;
             }
@@ -63,15 +67,17 @@ std::vector<glm::vec2> PoissonMap::genPoissonPoints(int NumPoints, int SearchThr
         { // 搜索附近的点
             auto NewPoint = genRandomPointAround(Point, MinGap);
             if (isCircle)
-            { // 此时需要在以(0.5, 0.5)为圆心，0.5为半径的圆内
-                if (glm::distance(NewPoint, glm::vec2(0.5f)) > 0.5f)
+            { // 此时需要在以(0.5, 0.5)为圆心，0.5为半径的球内
+                if (glm::distance(NewPoint, glm::vec3(0.5f)) > 0.5f)
                 {
                     continue;
                 }
             }
             else
-            { // 此时需要在[0, 1] x [0, 1]的方形内
-                if (NewPoint.x <= 0.0f || NewPoint.x >= 1.0f || NewPoint.y <= 0.0f || NewPoint.y >= 1.0f)
+            { // 此时需要在[0, 1] x [0, 1] x [0, 1]的方形内
+                if (NewPoint.x <= 0.0f || NewPoint.x >= 1.0f
+                    || NewPoint.y <= 0.0f || NewPoint.y >= 1.0f
+                    || NewPoint.z <= 0.0f || NewPoint.z >= 1.0f)
                 {
                     continue;
                 }
@@ -81,63 +87,12 @@ std::vector<glm::vec2> PoissonMap::genPoissonPoints(int NumPoints, int SearchThr
                 ProcessList.push_back(NewPoint);
                 SamplePoints.push_back(NewPoint);
                 grid.insert(NewPoint);
-//                std::cout << "( " << NewPoint.x << " , " << NewPoint.y << " )" << std::endl;
-//                std::cout << glm::distance(glm::vec2( 1.02769 , 0.23608 ), glm::vec2(0.5f)) << std::endl;
                 continue; // 找到了新的点，重新搜索
             }
         }
     }
-    return SamplePoints;
-}
 
-// 在Point附近（圆环邻域）随机取出一点
-glm::vec2 PoissonMap::genRandomPointAround(const glm::vec2& Point, float Bound)
-{
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<double> dis(-M_PI, M_PI);
-    // 距离在Bound ~ 2*Bound之间
-    float Radius = Bound + Bound * (dis(gen) + M_PI) / (2.0 * M_PI);
-    float Angle = dis(gen);
-    auto res = glm::vec2(Point.x + Radius * glm::cos(Angle), Point.y + Radius * glm::sin(Angle));
-    return res;
-}
 
-unsigned int PoissonMap::genRandomMap(const int &SampleNum)
-{
-    // 生成纹理
-    glGenTextures(1, &m_RendererID);
-    auto Points = genPoissonPoints(SampleNum << 1);
-
-    unsigned int Attempts = 0; // 尝试生成Random Map的此时
-    #define MAX_ATTEMPTS (100)
-    while (++Attempts < MAX_ATTEMPTS && Points.size() < SampleNum)
-    { // 生成的采样点数目不符合要求，重新生成
-        Points = genPoissonPoints(SampleNum << 1);
-    }
-
-    std::cout << "Final Sample Num: " << Points.size() << std::endl;
-    if (Attempts == MAX_ATTEMPTS)
-    {
-        std::cout << "Fail to generate Poisson Random Map with " << SampleNum << " sample points" << std::endl;
-    }
-    std::vector<float> Data(Points.size() << 1);
-    for (int i = 0, j = 0; i < Points.size(); ++i, j += 2)
-    {
-        Data[j] = Points[i].x;
-        Data[j + 1] = Points[i].y;
-    }
-
-    // 绑定纹理
-    glBindTexture(GL_TEXTURE_1D, m_RendererID);
-    // 分配空间，并写入纹理
-    glTexImage1D(GL_TEXTURE_1D, 0, GL_RG, Points.size(), 0, GL_RG, GL_FLOAT, &Data[0]);
-
-    // 设置纹理参数
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 #define __DEBUG_POISSON_MAP
 // debug，把采样点写入文件
@@ -145,13 +100,29 @@ unsigned int PoissonMap::genRandomMap(const int &SampleNum)
 #ifdef __DEBUG_POISSON_MAP
     // 把像素点写入文件
     std::ofstream out("../resource/PCSS/Poisson Map.txt");
-    for (int i = 0;i < Data.size(); i += 2)
+    for (auto & SamplePoint : SamplePoints)
     {
-        out << Data[i] << " " << Data[i+1] << " ";
+        out << SamplePoint.x << " " << SamplePoint.y << " " << SamplePoint.z << " ";
     }
     out.close();
 #endif
+    return SamplePoints;
+}
 
+// 在Point附近（圆环邻域）随机取出一点
+glm::vec3 PoissonMap::genRandomPointAround(const glm::vec3& Point, float Bound)
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-M_PI, M_PI);
+    // 距离在Bound ~ 2*Bound之间
+    float Radius = Bound + Bound * (dis(gen) + M_PI) / (2.0 * M_PI);
+    float Theta = dis(gen);
 
-    return m_RendererID;
+    float Phi = dis(gen) / 2.0f;
+
+    auto res = glm::vec3(Point.x + Radius * glm::cos(Theta) * glm::sin(Phi),
+                         Point.y + Radius * glm::sin(Theta) * glm::sin(Phi),
+                         Point.z + Radius * glm::cos(Phi));
+    return res;
 }

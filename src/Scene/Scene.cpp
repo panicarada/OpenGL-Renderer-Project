@@ -170,6 +170,8 @@ bool test::Scene::load(const std::string &FileName)
     }
 
     m_LightSet.clear();
+    selectedLight = nullptr; // 如果不释放，这个共享指针被持有，对应光源就不会被delete
+
     m_GeometrySet.clear();
 
 
@@ -385,7 +387,7 @@ void test::Scene::GuiGeometry()
     // 材质和颜色
     if (ImGui::ColorEdit4("Color", &selectedGeometry->m_Color.x))
     {
-        selectedGeometry->updateDrawData();
+//        selectedGeometry->updateDrawData();
     }
     if (ImGui::ColorEdit4("Material Ambient", &selectedGeometry->m_Material.Ambient[0]))
     {
@@ -407,11 +409,23 @@ void test::Scene::GuiGeometry()
 
     if (selectedGeometry->getClassName() == "Geometry::Cylinder")
     {
-        if (ImGui::SliderFloat4("Scale", &selectedGeometry->m_Scale.w, 0.0f, 10.0f))
+        if (selectedGeometry->Tag == "Cone")
         {
-            selectedGeometry->updateDrawData();
-            // 更新阴影
-            updateShadow = true;
+            if (ImGui::SliderFloat3("Scale", &selectedGeometry->m_Scale.x, 0.0f, 10.0f))
+            {
+                selectedGeometry->updateDrawData();
+                // 更新阴影
+                updateShadow = true;
+            }
+        }
+        else
+        {
+            if (ImGui::SliderFloat4("Scale", &selectedGeometry->m_Scale.w, 0.0f, 10.0f))
+            {
+                selectedGeometry->updateDrawData();
+                // 更新阴影
+                updateShadow = true;
+            }
         }
     }
     else
@@ -598,7 +612,7 @@ void test::Scene::GuiShadow()
     { // 更新阴影采样点数目
         m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
     }
-    if (ImGui::DragFloat("Shadow Sample Area", &u_SampleArea, 0.00008f, 0.0f, 0.023f))
+    if (ImGui::DragFloat("Shadow Sample Area", &u_SampleArea, 0.00008f, 0.0f, 0.04f))
     {
         m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
     }

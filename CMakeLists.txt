@@ -48,16 +48,13 @@ link_libraries(${GLEW_LINK} ${FRAMEWORKS_1} ${FRAMEWORKS_2} ${FRAMEWORKS_3} ${FR
 
 
 find_package(OpenMP REQUIRED)
-add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src/Basic.h src/Render/Renderer.h src/Render/Shader.cpp src/Render/Shader.h src/Render/VertexBuffer.h src/Render/VertexBufferLayout.h src/Render/VertexArray.h src/Render/IndexBuffer.h src/Render/TextureArray.h src/Tests/Test.h src/Tests/TestBatchColor.cpp src/Tests/TestBatchColor.h src/Geometry/Geometry.h src/Geometry/Sphere.cpp src/Geometry/Sphere.h src/Tests/TestSphere.cpp src/Tests/TestSphere.h
+add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src/Basic.h src/Render/Renderer.h src/Render/Shader.cpp src/Render/Shader.h src/Render/VertexBuffer.h src/Render/VertexBufferLayout.h src/Render/VertexArray.h src/Render/IndexBuffer.h src/Render/TextureArray.h src/Tests/Test.h src/Geometry/Geometry.h src/Geometry/Sphere.cpp src/Geometry/Sphere.h
         lib/imgui/examples/imgui_impl_glfw.cpp lib/imgui/examples/imgui_impl_glfw.h
         lib/imgui/imgui.cpp lib/imgui/imgui_demo.cpp lib/imgui/imgui_draw.cpp lib/imgui/imgui_widgets.cpp
-        lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Tests/TestCube.cpp src/Tests/TestCube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Tests/TestCylinder.cpp src/Tests/TestCylinder.h src/Tests/TestGeometry.cpp src/Tests/TestGeometry.h src/Scene/Light.h src/Scene/Scene.cpp src/Scene/Scene.h src/Tests/TestDepth.cpp src/Tests/TestDepth.h src/Scene/Shadow.cpp src/Scene/Shadow.h
-        src/Tests/TestShadow.h src/Tests/TestTexture.cpp src/Tests/TestTexture.h
+        lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Scene/Light.h src/Scene/Scene.cpp src/Scene/Scene.h src/Scene/Shadow.cpp src/Scene/Shadow.h
         lib/include/stb_image/stb_image.h lib/stb_image/stb_image.cpp src/Render/TextureArray.cpp src/Scene/Light.cpp
-        lib/include/stb_image/stb_image_resize.h lib/stb_image/stb_image_resize.cpp src/Tests/TestShadow.cpp
-        src/Tests/TestShadowPCSS.cpp src/Tests/TestShadowPCSS.h
+        lib/include/stb_image/stb_image_resize.h lib/stb_image/stb_image_resize.cpp
         src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp
-        src/Scene/SoftShadow.h src/Tests/TestShadowVSM.cpp
-        src/Tests/TestShadowVSM.h
+        src/Scene/SoftShadow.h
         src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp lib/include/stb_image/stb_image_write.h lib/stb_image/stb_image_write.cpp src/Geometry/Geometry.cpp)
 target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX)

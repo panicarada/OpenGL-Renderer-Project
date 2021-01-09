@@ -14,7 +14,6 @@
 #include <omp.h> // Open MP
 #include <functional>
 
-
 #include <unordered_map>
 #include <fstream>
 #include <sstream>
@@ -24,11 +23,7 @@
 
 #define WINDOW_WIDTH 1080
 #define WINDOW_HEIGHT 960
-
-
-
 #define WINDOW_RATIO (1.0f * WINDOW_HEIGHT/WINDOW_HEIGHT)
-
 // 定义View Matrix时用到的
 #define ZNEAR 0.1f
 #define ZFAR 100.0f
@@ -80,14 +75,12 @@ struct Scale
     float y;
     float z;
 };
-
 struct Rotation
 { // 物体的旋转
     float Pitch;// 俯仰角
     float Yaw; // 偏航角
     float Roll; // 滚转角
 };
-
 // 物体的材质
 struct Material
 {
@@ -176,7 +169,7 @@ struct Vertex
 {
     glm::vec3 Position;
     glm::vec3 Normal;
-    glm::vec4 Color;
+//    glm::vec4 Color;
     glm::vec2 TexCoord;
 };
 

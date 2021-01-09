@@ -22,11 +22,11 @@ public:
         DebugCall(glDeleteVertexArrays(1, &m_RendererID));
     }
 
-    void addBuffer(const VertexBuffer& vb, const VertexBufferLayout& layout)
+    void addBuffer(const std::shared_ptr<VertexBuffer>& vb, const std::shared_ptr<VertexBufferLayout>& layout)
     {
         bind();
-        vb.bind();
-        const auto& elements = layout.getElements();
+        vb->bind();
+        const auto& elements = layout->getElements();
         unsigned int offset = 0;
         for (unsigned int i = 0; i < elements.size(); ++i)
         {
@@ -34,7 +34,7 @@ public:
             DebugCall(glEnableVertexAttribArray(i));
             // 下面这条指令把buffer和目前绑定的vao进行绑定
             DebugCall(glVertexAttribPointer(i, element.Count, element.Type,
-                                         element.Normalized, layout.getStride(), (void*)(uintptr_t)offset)); // uint --> uint pointer --> void pointer
+                                         element.Normalized, layout->getStride(), (void*)(uintptr_t)offset)); // uint --> uint pointer --> void pointer
 
             offset += element.Count * getSizeofType(element.Type);
         }

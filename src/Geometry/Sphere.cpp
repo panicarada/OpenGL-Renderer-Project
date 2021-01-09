@@ -11,15 +11,9 @@ Sphere::Sphere(const std::shared_ptr<Camera>& camera, const std::shared_ptr<Shad
                const glm::vec3 &position, const Material& material, const Rotation& rotation, const Scale& Scale)
    : Geometry(camera, shader, position, material, rotation, Scale)
 {
-    m_Layout->Push<float>(3); // 点坐标
-    m_Layout->Push<float>(3); // 法向量
-    m_Layout->Push<float>(4); // 颜色
-    m_Layout->Push<float>(2); // 纹理坐标
-
     m_VerticalSteps = 50;
     m_HorizontalSteps = 50;
     updateDrawData();
-
 
     // 函数指针的加载
     // 球类需要额外储存细分度的信息
@@ -51,12 +45,9 @@ void Sphere::updateDrawData()
 
     // 每遍历到球上某一点，我们就绘制两个相接的三角形，需要6个m_Indices
     m_Indices.resize(6 * (m_VerticalSteps-1) * m_HorizontalSteps);
-    // 随机数
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_real_distribution<> distribution(0.0f, 0.0f);//uniform distribution between 0 and 1
-    {// 电脑是八核的
-        #pragma omp parallel for
+
+    {
+        #pragma omp parallel for schedule(guided,2)
         for (int i = 0; i < m_VerticalSteps; ++i)
         {
             for (int j = 0; j < m_HorizontalSteps; ++j)
@@ -68,13 +59,8 @@ void Sphere::updateDrawData()
 
                 glm::vec3 Position = glm::vec3(cos(Theta) * sinPhi, cosPhi,sin(Theta) * sinPhi);
 
-                double rand1 = distribution(generator);
-                double rand2 = distribution(generator);
-                double rand3 = distribution(generator);
-
                 m_Vertices[i * m_HorizontalSteps + j].Position = Position;
                 m_Vertices[i * m_HorizontalSteps + j].Normal = Position;
-                m_Vertices[i * m_HorizontalSteps + j].Color = m_Color + glm::vec4(rand1, rand2, rand3, 0.0f);
                 m_Vertices[i * m_HorizontalSteps + j].TexCoord = glm::vec2(1.0*i/(m_VerticalSteps-1), 1.0*j/(m_HorizontalSteps-1));
 
                 // m_Indices
@@ -91,14 +77,10 @@ void Sphere::updateDrawData()
             }
         }
     }
-
     // 重新分配空间
-    m_VertexBuffer = std::make_unique<VertexBuffer>(nullptr, m_Vertices.size() * sizeof(Vertex), false);
-    m_IndexBuffer = std::make_unique<IndexBuffer>(nullptr, m_Indices.size(), false);
-    // 绑定VAO
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_Indices.size() * sizeof(unsigned int), &m_Indices[0]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0, m_Vertices.size() * sizeof(Vertex), &m_Vertices[0]); // No allocation, only send data
-    m_VAO->addBuffer(*m_VertexBuffer, *m_Layout);
+    m_VertexBuffer = std::make_unique<VertexBuffer>(&m_Vertices[0], m_Vertices.size() * sizeof(Vertex), false);
+    m_IndexBuffer = std::make_unique<IndexBuffer>(&m_Indices[0], m_Indices.size(), false);
+    m_VAO->addBuffer(m_VertexBuffer, m_Layout);
 }
 
 void Sphere::updateSubdivision(int VerticalSteps, int HorizontalSteps)

@@ -22,7 +22,6 @@ public:
            const Scale& Scale = {1.0f, 1.0f, 1.0f, 1.0f});
 
     void loadOBJ(const std::string& FileName);
-    void updateDrawData() override; // 更新用于绘制的数据
     inline std::string getClassName() const override
     {
         return "Geometry::ObjLoader";
@@ -45,7 +44,6 @@ private:
 
             // 第二个点所关联的三角形被载入
             Points.erase(Points.begin() + 1);
-
             // 递归调用
             triangulate(Points, OutputIndices);
         }

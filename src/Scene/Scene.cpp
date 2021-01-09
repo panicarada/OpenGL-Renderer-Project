@@ -32,6 +32,11 @@ void test::Scene::OnRender()
             }
             glActiveTexture(GL_TEXTURE0 + m_TextureArray->getImageNum() + light->m_ID);
             m_Shadows[light->m_ID]->render(m_GeometrySet, light);
+
+            m_Shader->bind();
+//            m_Shader->setUniform1i("u_DepthMap_" + std::to_string(light->m_ID),
+//                                    m_TextureArray->getImageNum() + light->m_ID); // TEXTURE 0~ImageNum-1被纹理占用
+
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadows[light->m_ID]->getDepthMap());
             Counter ++;
         }
@@ -495,8 +500,7 @@ void test::Scene::GuiLight()
     int i = 0;
     for (auto& light : m_LightSet)
     {
-        light->m_ID = i;
-        items.push_back(light->m_Name + std::to_string(i));
+        items.push_back(light->m_Name + std::to_string(light->m_ID));
         if (selectedLight == light)
         {
             selectedItem = i;
@@ -628,11 +632,11 @@ void test::Scene::OnKeyAction(int key, int mods)
             if (selectedLight)
             {
                 m_LightSet.erase(selectedLight);
+                selectedLight = nullptr;
                 if (!m_LightSet.empty())
                 {
-                    selectedLight = *m_LightSet.begin();
+                    selectedLight = *(m_LightSet.begin());
                 }
-                else selectedLight = nullptr;
                 updateShadow = true; // 更新阴影
             }
         }

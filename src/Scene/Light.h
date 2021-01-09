@@ -45,6 +45,7 @@ public:
     {
         if (m_ID >= 0)
         {
+            m_Shader->setUniform1i("u_Lights[" + std::to_string(m_ID) + "].isOpen", 1);
             m_Shader->setUniform3f("u_Lights[" + std::to_string(m_ID) + "].Position", m_Position);
             m_Shader->setUniform4f("u_Lights[" + std::to_string(m_ID) + "].Color", m_Color);
             m_Shader->setUniform1f("u_Lights[" + std::to_string(m_ID) + "].Brightness", m_Brightness);

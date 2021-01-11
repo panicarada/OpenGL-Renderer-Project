@@ -9,7 +9,7 @@
 
 
 std::shared_ptr<Camera> camera = nullptr;
-test::Test* currentTest = nullptr;
+test::Test* CurrentTest = nullptr;
 
 // GUI库
 #include "imgui.h"
@@ -20,7 +20,7 @@ test::Test* currentTest = nullptr;
 int main()
 {
     Basic::init();
-
+    /* GLFW初始化 */
     // Initialise GLFW
     if( !glfwInit() )
     {
@@ -98,6 +98,8 @@ int main()
         fprintf(stderr, "Failed to initialize OpenGL loader!\n");
         return 1;
     }
+
+    /* ImGUI初始化 */
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -106,19 +108,14 @@ int main()
     io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
     io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
 
-//    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
     ImGui::StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    auto testMenu = new test::TestMenu(currentTest);
-    currentTest = testMenu;
+    auto testMenu = new test::TestMenu(CurrentTest);
+    CurrentTest = testMenu;
 
     testMenu->RegisterTest<test::Scene>("Scene");
-
 
     float lastTime = 0.0f;
 
@@ -132,9 +129,9 @@ int main()
 
     // 注册键盘回调函数
     glfwSetKeyCallback(window, [](GLFWwindow* window, int key, int scancode, int action, int mods){
-        if (currentTest && action == GLFW_PRESS)
+        if (CurrentTest && action == GLFW_PRESS)
         {
-            currentTest->OnKeyAction(key, mods);
+            CurrentTest->OnKeyAction(key, mods);
         }
         if (camera)
         {
@@ -149,6 +146,7 @@ int main()
         }
     });
 
+    /* 主循环 */
     while( !glfwWindowShouldClose(window) )
     {
         DebugCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f))
@@ -157,20 +155,20 @@ int main()
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        if (currentTest)
+        if (CurrentTest)
         {
-            camera = currentTest->getCamera();
+            camera = CurrentTest->getCamera();
             float currentTime = glfwGetTime();
-            currentTest->OnUpdate(window, currentTime - lastTime);
+            CurrentTest->OnUpdate(window, currentTime - lastTime);
             lastTime = currentTime;
-            currentTest->OnRender();
+            CurrentTest->OnRender();
             ImGui::Begin("Test");
-            if (currentTest != testMenu && ImGui::Button("<-"))
+            if (CurrentTest != testMenu && ImGui::Button("<-"))
             {
-                delete currentTest;
-                currentTest = testMenu;
+                delete CurrentTest;
+                CurrentTest = testMenu;
             }
-            currentTest->OnImGuiRender();
+            CurrentTest->OnImGuiRender();
             ImGui::End();
         }
         ImGui::Render();
@@ -180,16 +178,18 @@ int main()
         glfwPollEvents();
     }
 
-    delete currentTest;
-    if (currentTest != testMenu)
+    /* 清空指针 */
+    delete CurrentTest;
+    if (CurrentTest != testMenu)
     {
         delete testMenu;
     }
-    // Cleanup
+    /* ImGUI Cleanup */
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
+    /* GLFW Cleanup */
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;

@@ -19,15 +19,7 @@ public:
     {
         return "Geometry::Sphere";
     }
-    inline int getVerticalSteps() const
-    {
-        return m_VerticalSteps;
-    }
-    inline int getHorizontalSteps() const
-    {
-        return m_HorizontalSteps;
-    }
-private:
+public:
     int m_VerticalSteps;
     int m_HorizontalSteps;
 };

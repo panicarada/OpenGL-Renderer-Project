@@ -1,14 +1,14 @@
 Shader: ../resource/Scene/Scene.shader
 Shadow: ../resource/Scene/Shadow.shader
-SampleNum: 12
-SampleArea: 0.003
+SampleNum: 16
+SampleArea: 0.023
 Projection: 1.06092 0 0 0 0 1.06092 0 0 0 0 -1.002 -1 0 0 -0.2002 0 
 Tag: Perspective
-Position: 4.37595 -1.08245 -4.50637
+Position: 4.88629 -0.89092 -4.22914
 InitDirection: 0 0 -1
 InitRight: 1 -0 0
 InitUp: 0 1 0
-Rotation: 1.19052 0.443498
+Rotation: 1.11123 0.316219
 AngleOfView: 86.6137
 InitAngleOfView: 45
 END_CAMERA
@@ -19,18 +19,6 @@ Position: 6.26 3.496 1.41421
 Color: 1 1 1 1
 Attenuation: 0.764 0.06 0.033
 END_LIGHTING
-Geometry::Sphere NONE
-Position: 1.79088 0 -4.78644
-Rotation: 0 0 0
-Color: 0.48 0.75 0.81 1
-Scale: 1 2.234 1 1
-Material::Ambient: 0.759804 0.376177 0.443876 1
-Material::Diffuse: 0.794118 0.612295 0.276384 1
-Material::Specular: 0.65643 0.769608 0 1
-Material::Highlight: 1
-TextureSlot: -1
-TexturePath: NONE
-50 50
 Geometry::ObjLoader NONE
 Position: 0.894 -1.22 -3.008
 Rotation: 0 0 0
@@ -43,4 +31,16 @@ Material::Highlight: 1
 TextureSlot: 0
 TexturePath: ../resource/Textures/wood.jpg
 chair.obj
+Geometry::Sphere NONE
+Position: 1.79088 0 -4.78644
+Rotation: 0 0 0
+Color: 0.48 0.75 0.81 1
+Scale: 1 2.234 1 1
+Material::Ambient: 0.759804 0.376177 0.443876 1
+Material::Diffuse: 0.794118 0.612295 0.276384 1
+Material::Specular: 0.65643 0.769608 0 1
+Material::Highlight: 1
+TextureSlot: -1
+TexturePath: NONE
+50 50
 END_GEOMETRY

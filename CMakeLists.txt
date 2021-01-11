@@ -54,7 +54,6 @@ add_executable(CG_project main.cpp src/Camera/Camera.cpp src/Camera/Camera.h src
         lib/imgui/examples/imgui_impl_opengl3.cpp src/Geometry/Cube.cpp src/Geometry/Cube.h src/Geometry/Cylinder.cpp src/Geometry/Cylinder.h src/Scene/Light.h src/Scene/Scene.cpp src/Scene/Scene.h src/Scene/Shadow.cpp src/Scene/Shadow.h
         lib/include/stb_image/stb_image.h lib/stb_image/stb_image.cpp src/Render/TextureArray.cpp src/Scene/Light.cpp
         lib/include/stb_image/stb_image_resize.h lib/stb_image/stb_image_resize.cpp
-        src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h src/Scene/SoftShadow.cpp
-        src/Scene/SoftShadow.h
+        src/Scene/PoissonMap.cpp src/Scene/PoissonMap.h
         src/Geometry/ObjLoader.cpp src/Geometry/ObjLoader.h src/Basic.cpp lib/include/stb_image/stb_image_write.h lib/stb_image/stb_image_write.cpp src/Geometry/Geometry.cpp)
 target_link_libraries(CG_project PRIVATE OpenMP::OpenMP_CXX)

@@ -86,8 +86,6 @@ uint hash( uvec2 v ) { return hash( v.x ^ hash(v.y)                         ); }
 uint hash( uvec3 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z)             ); }
 uint hash( uvec4 v ) { return hash( v.x ^ hash(v.y) ^ hash(v.z) ^ hash(v.w) ); }
 
-
-
 const uint ieeeMantissa = 0x007FFFFFu; // binary32 mantissa bitmask
 const uint ieeeOne      = 0x3F800000u; // 1.0 in IEEE binary32
 
@@ -106,12 +104,11 @@ float floatConstruct( uint m )
 float random( float x ) { return floatConstruct(hash(floatBitsToUint(x)));}
 float random( vec3  v ) { return floatConstruct(hash(floatBitsToUint(v))); }
 
-//const int SampleNum = 27;
+
 uniform int u_SampleNum;
 const int MAX_SAMPLE_NUM = 27;
 uniform vec3 u_SampledPoints[MAX_SAMPLE_NUM];
 uniform float u_SampleImportance[MAX_SAMPLE_NUM];
-//uniform float u_SampleImportanceSum;
 uniform float u_SampleArea; // 采样范围
 float calculateShadow(samplerCube DepthMap, vec3 FragPosition, vec3 LightPos)
 {
@@ -126,7 +123,6 @@ float calculateShadow(samplerCube DepthMap, vec3 FragPosition, vec3 LightPos)
 
 	float DiskRadius = (1.0 + (ViewDistance / u_zFar)) * u_SampleArea;
 
-	vec3 Noise = 2.5 * (vec3(random(LightToFrag.x), random(CurrentDepth), random(ViewDistance)) - 0.5);
 	// 把for循环展开一点，可以加速
 	float SampleImportanceSum = 0.0;
 	if (u_SampleNum == 0)
@@ -136,8 +132,9 @@ float calculateShadow(samplerCube DepthMap, vec3 FragPosition, vec3 LightPos)
 	for(int i = 0; i < u_SampleNum; i ++)
 	{
 		// 用LightToFrag采样在光视角下该fragment对应位置最近的深度（理论上如果该点被光直射，则最近深度就是它自己的深度）
+		vec3 Noise = 2.5 * (vec3(random(LightToFrag.x), random(i * CurrentDepth * LightToFrag.y), random(i * i * SampleImportanceSum * LightToFrag.z)) - 0.5);
 		float ClosestDepth = texture(DepthMap, LightToFrag + // 加上一个随机噪声
-		(u_SampledPoints[i] + Noise) * DiskRadius).r;
+									(u_SampledPoints[i] + Noise) * DiskRadius).r;
 		ClosestDepth *= u_zFar;   // 计算深度时，我们归一到了[0, 1]，现在再展开
 		if(CurrentDepth - Bias > ClosestDepth)
 		{ // 如果它就是最近深度，则被阴影覆盖，因为有多个采样点，所以阴影值加权平均

@@ -19,8 +19,6 @@ void test::Scene::OnUpdate(GLFWwindow *Window, float deltaTime)
 void test::Scene::OnRender()
 {
     DebugCall(glClearColor(0.1f, 0.3f, 0.5f, 0.6f));
-
-//    m_Shadow_00->setSamples(m_Shader);
     if (updateShadow)
     {
         int Counter = 0;
@@ -34,8 +32,8 @@ void test::Scene::OnRender()
             m_Shadows[light->m_ID]->render(m_GeometrySet, light);
 
             m_Shader->bind();
-//            m_Shader->setUniform1i("u_DepthMap_" + std::to_string(light->m_ID),
-//                                    m_TextureArray->getImageNum() + light->m_ID); // TEXTURE 0~ImageNum-1被纹理占用
+            m_Shader->setUniform1i("u_DepthMap_" + std::to_string(light->m_ID),
+                                    m_TextureArray->getImageNum() + light->m_ID); // TEXTURE 0~ImageNum-1被纹理占用
 
             glBindTexture(GL_TEXTURE_CUBE_MAP, m_Shadows[light->m_ID]->getDepthMap());
             Counter ++;
@@ -45,8 +43,6 @@ void test::Scene::OnRender()
 
     // 清除z-buffer，用于深度测试；以及清除背景颜色
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
     // 启用材质
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D_ARRAY, m_TextureArray->getRendererID());
@@ -64,7 +60,6 @@ void test::Scene::OnRender()
         }
         m_Shader->setUniform3f("u_CameraPosition", Position.x, Position.y, Position.z);
     }
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for (auto& geometry : m_GeometrySet)
@@ -82,7 +77,6 @@ void test::Scene::OnImGuiRender()
     GuiTexture();
     GuiScene();
     GuiObj();
-
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
@@ -98,6 +92,7 @@ void test::Scene::init(const std::string &ShaderFile, const std::string &ShadowF
     glEnable(GL_DEPTH_TEST);
     m_Shader = std::make_shared<Shader>(ShaderFile);
     m_Shader->bind();
+
     m_Camera = std::make_shared<Camera>();
     selectedGeometry = nullptr;
 
@@ -123,12 +118,10 @@ void test::Scene::init(const std::string &ShaderFile, const std::string &ShadowF
         m_Shadows.emplace_back(std::make_shared<Shadow>(ShadowShader));
     }
 
-
     // 初始采样点数目以及采样范围设置
     m_Shader->bind();
     m_Shader->setUniform1i("u_SampleNum", u_SampleNum);
     m_Shader->setUniform1f("u_SampleArea", u_SampleArea);
-
     std::cout << Basic::getConstant("Scene", "MAX_SAMPLE_NUM") << std::endl;
 }
 
@@ -178,6 +171,7 @@ bool test::Scene::load(const std::string &FileName)
     selectedLight = nullptr; // 如果不释放，这个共享指针被持有，对应光源就不会被delete
 
     m_GeometrySet.clear();
+    selectedGeometry = nullptr;
 
 
     std::string str;
@@ -189,7 +183,6 @@ bool test::Scene::load(const std::string &FileName)
     Basic::init();
     In >> str >> u_SampleNum;
     In >> str >> u_SampleArea;
-//    u_SampleArea /= 100.0f;
     // 重新初始化
     init(Basic::getFileName("Scene"), Basic::getFileName("Shadow"));
 
@@ -235,6 +228,7 @@ void test::Scene::GuiGeometry()
 
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
     if (ImGui::Button("add cube"))
     {
@@ -246,6 +240,7 @@ void test::Scene::GuiGeometry()
 
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
     if (ImGui::Button("add cone"))
     {
@@ -261,6 +256,7 @@ void test::Scene::GuiGeometry()
 
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
     if (ImGui::Button("add cylinder"))
     {
@@ -272,6 +268,7 @@ void test::Scene::GuiGeometry()
 
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
     if (ImGui::Button("add Prism"))
     {
@@ -286,20 +283,8 @@ void test::Scene::GuiGeometry()
 
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
-    if (ImGui::Button("add light"))
-    {
-        auto light = std::make_shared<Light>(m_Shader);
-        m_LightSet.insert(light);
-        // 保证创建光源总在相机后面
-        light->m_Position = m_Camera->getPosition() - 2.0f * m_Camera->getDirection();
-        selectedLight = light; // 总是保证新加的光源是先被选中的
-        selectedLight->updateData();
-
-        // 更新阴影
-        updateShadow = true;
-    }
-
     /* 物体的集合 */
     std::vector<std::string> items;
     std::unordered_map<int, std::shared_ptr<Geometry>> GeometryMap; // 整数到指针的映射表
@@ -340,6 +325,7 @@ void test::Scene::GuiGeometry()
     {
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
 
     if (ImGui::SliderFloat3("Rotation", &selectedGeometry->m_Rotation.Pitch, -180.0f, 180.0f))
@@ -347,12 +333,12 @@ void test::Scene::GuiGeometry()
         selectedGeometry->updateRotation();
         // 更新阴影
         updateShadow = true;
+        OnRender();
     }
 
     if ((selectedGeometry->getClassName() == "Geometry::Cylinder"))
     {
         auto cylinder = std::dynamic_pointer_cast<Cylinder>(selectedGeometry);
-        m_Steps = cylinder->m_Steps;
         int minSteps = 20;
         int maxSteps = 300;
         if (cylinder->Tag == "Prism")
@@ -360,55 +346,49 @@ void test::Scene::GuiGeometry()
             minSteps = 3;
             maxSteps = 10;
         }
-        if (ImGui::SliderInt("Subdivision", &m_Steps, minSteps, maxSteps))
+        if (ImGui::SliderInt("Subdivision", &cylinder->m_Steps, minSteps, maxSteps))
         {
-            cylinder->updateSubdivision(m_Steps);
-
+            cylinder->updateDrawData();
             // 更新阴影
             updateShadow = true;
+            OnRender();
         }
     }
 
     if ((selectedGeometry->getClassName() == "Geometry::Sphere"))
     {
         auto sphere = std::dynamic_pointer_cast<Sphere>(selectedGeometry);
-        m_HorizontalSteps = sphere->getHorizontalSteps();
-        m_VerticalSteps = sphere->getVerticalSteps();
-        if (ImGui::SliderInt("Horizontal Subdivision", &m_HorizontalSteps, 20, 300))
+        if (ImGui::SliderInt("Horizontal Subdivision", &sphere->m_HorizontalSteps, 20, 300))
         { // 只有球体可以使用
-            sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
-
+            sphere->updateDrawData();
             // 更新阴影
             updateShadow = true;
+            OnRender();
         }
-        if (ImGui::SliderInt("Vertical Subdivision", &m_VerticalSteps, 20, 300))
+        if (ImGui::SliderInt("Vertical Subdivision", &sphere->m_VerticalSteps, 20, 300))
         { // 只有球体可以使用
-            sphere->updateSubdivision(m_VerticalSteps, m_HorizontalSteps);
+            sphere->updateDrawData();
             // 更新阴影
             updateShadow = true;
+            OnRender();
         }
     }
 
     // 材质和颜色
     if (ImGui::ColorEdit4("Color", &selectedGeometry->m_Color.x))
     {
-//        selectedGeometry->updateDrawData();
     }
     if (ImGui::ColorEdit4("Material Ambient", &selectedGeometry->m_Material.Ambient[0]))
     {
-//        selectedGeometry->updateDrawData();
     }
     if (ImGui::ColorEdit4("Material Diffuse", &selectedGeometry->m_Material.Diffuse[0]))
     {
-//        selectedGeometry->updateDrawData();
     }
     if (ImGui::ColorEdit4("Material Specular", &selectedGeometry->m_Material.Specular[0]))
     {
-//        selectedGeometry->updateDrawData();
     }
     if (ImGui::SliderFloat("Material Highlight", &selectedGeometry->m_Material.Highlight, 1.0f, 180.0f))
     {
-//        selectedGeometry->updateRotation();
     }
 
 
@@ -421,6 +401,7 @@ void test::Scene::GuiGeometry()
                 selectedGeometry->updateDrawData();
                 // 更新阴影
                 updateShadow = true;
+                OnRender();
             }
         }
         else
@@ -430,6 +411,7 @@ void test::Scene::GuiGeometry()
                 selectedGeometry->updateDrawData();
                 // 更新阴影
                 updateShadow = true;
+                OnRender();
             }
         }
     }
@@ -440,6 +422,7 @@ void test::Scene::GuiGeometry()
             selectedGeometry->updateDrawData();
             // 更新阴影
             updateShadow = true;
+            OnRender();
         }
     }
 }
@@ -492,6 +475,19 @@ void test::Scene::GuiTexture()
 
 void test::Scene::GuiLight()
 {
+    if (ImGui::Button("add light"))
+    {
+        auto light = std::make_shared<Light>(m_Shader);
+        m_LightSet.insert(light);
+        // 保证创建光源总在相机后面
+        light->m_Position = m_Camera->getPosition() - 2.0f * m_Camera->getDirection();
+        selectedLight = light; // 总是保证新加的光源是先被选中的
+        selectedLight->updateData();
+        // 更新阴影
+        updateShadow = true;
+        OnRender();
+    }
+
     /* 光源的集合 */
     std::unordered_map<int, std::shared_ptr<Light>> LightMap; // 整数到指针的映射表
     std::vector<std::string> items;
@@ -525,6 +521,7 @@ void test::Scene::GuiLight()
             selectedLight->updateData();
             // 更新阴影
             updateShadow = true;
+            OnRender();
         }
         if (ImGui::SliderFloat("Light Brightness", &selectedLight->m_Brightness, 0.5f, 5.0f))
         {
@@ -559,7 +556,6 @@ void test::Scene::GuiScene()
     {
         this->load(m_SceneName_Load);
     }
-
     // 保存场景
     if (ImGui::InputText("Scene Name (Save)", &m_SceneName_Save, ImGuiInputTextFlags_EnterReturnsTrue))
     {
@@ -638,6 +634,7 @@ void test::Scene::OnKeyAction(int key, int mods)
                     selectedLight = *(m_LightSet.begin());
                 }
                 updateShadow = true; // 更新阴影
+                OnRender();
             }
         }
         else
@@ -652,6 +649,7 @@ void test::Scene::OnKeyAction(int key, int mods)
                 }
                 else selectedGeometry = nullptr;
                 updateShadow = true; // 更新阴影
+                OnRender();
             }
         }
     }

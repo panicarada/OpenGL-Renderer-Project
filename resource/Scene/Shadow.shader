@@ -16,7 +16,7 @@ void main()
 layout (triangles) in;
 layout (triangle_strip, max_vertices=18) out;
 uniform mat4 u_LightSpaceMatrices[6];
-//
+
 out vec4 FragPos; // FragPos from GS (output per emitvertex)
 
 void main()
@@ -39,7 +39,6 @@ void main()
 #shader fragment
 #version 330 core
 in vec4 FragPos;
-
 uniform vec3 u_LightPosition;
 uniform float u_zFar;
 

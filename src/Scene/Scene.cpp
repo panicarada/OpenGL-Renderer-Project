@@ -390,8 +390,7 @@ void test::Scene::GuiGeometry()
     if (ImGui::SliderFloat("Material Highlight", &selectedGeometry->m_Material.Highlight, 1.0f, 180.0f))
     {
     }
-
-
+    
     if (selectedGeometry->getClassName() == "Geometry::Cylinder")
     {
         if (selectedGeometry->Tag == "Cone")
@@ -417,7 +416,7 @@ void test::Scene::GuiGeometry()
     }
     else
     {
-        if (ImGui::SliderFloat3("Scale", &selectedGeometry->m_Scale.x, 0.05f, 10.0f))
+        if (ImGui::SliderFloat3("Scale", &selectedGeometry->m_Scale.x, 0.005f, 10.0f))
         {
             selectedGeometry->updateDrawData();
             // 更新阴影
@@ -593,7 +592,6 @@ void test::Scene::GuiObj()
         m_ObjLoader->m_Scale = {0.1, 0.1f, 0.1f, 0.1f};
         m_GeometrySet.insert(m_ObjLoader);
         selectedGeometry = m_ObjLoader;
-        this->save(m_ObjName_Import);
     }
     // 导出obj
     if (ImGui::InputText("Obj Name (Export)", &m_ObjName_Export, ImGuiInputTextFlags_EnterReturnsTrue))
